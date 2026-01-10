@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>Bottleneck Simulator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: monospace;
+            background: #f0f0f0;
+            padding: 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        h1 {
+            margin: 0 0 20px 0;
+        }
+        /* Stats bar styles removed */
+        .controls {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        #startBtn {
+            font-size: 24px;
+            padding: 10px 30px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            border: 2px solid #000;
+            font-family: monospace;
+        }
+        #startBtn:hover {
+            background: #45a049;
+        }
+        #startBtn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #stopBtn {
+            font-size: 24px;
+            padding: 10px 30px;
+            cursor: pointer;
+            background: #f44336;
+            color: white;
+            border: 2px solid #000;
+            font-family: monospace;
+            display: none;
+        }
+        #stopBtn:hover {
+            background: #d32f2f;
+        }
+        #stopBtn.visible {
+            display: inline-block;
+        }
+        #resetBtn {
+            font-size: 16px;
+            padding: 8px 16px;
+            cursor: pointer;
+            background: #666;
+            color: white;
+            border: 2px solid #000;
+            font-family: monospace;
+        }
+        #resetBtn:hover {
+            background: #555;
+        }
+        .timer {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .costume-picker {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+        }
+        .costume-btn {
+            font-size: 30px;
+            padding: 5px 10px;
+            cursor: pointer;
+            border: 2px solid #ccc;
+            background: #fff;
+            border-radius: 5px;
+        }
+        .costume-btn:hover {
+            border-color: #666;
+        }
+        .costume-btn.selected {
+            border-color: #000;
+            background: #e0e0e0;
+        }
+        .mute-btn {
+            font-size: 24px;
+            padding: 5px 12px;
+            cursor: pointer;
+            border: 2px solid #ccc;
+            background: #fff;
+            border-radius: 5px;
+        }
+        .mute-btn:hover {
+            border-color: #666;
+        }
+        .mute-btn.muted {
+            background: #ffeeee;
+            border-color: #ff6666;
+        }
+        .flow-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: #fff;
+            padding: 20px;
+            border: 2px solid #000;
+        }
+        .flow-arrow {
+            font-size: 24px;
+            flex-shrink: 0;
+            padding-top: 15px;
+        }
+        .workers-row {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+            justify-content: space-around;
+        }
+        .worker-station {
+            display: flex;
+            align-items: flex-start;
+        }
+        .queue {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2px;
+            min-width: 40px;
+            min-height: 50px;
+            max-height: calc(100vh - 300px);
+            overflow: hidden;
+            padding: 5px;
+            background: #f9f9f9;
+            border: 1px dashed #ccc;
+            margin-right: 5px;
+        }
+        .queue-item {
+            font-size: 14px;
+        }
+        .worker {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .worker-icon {
+            font-size: 40px;
+            padding: 8px;
+            border: 3px solid #ccc;
+            border-radius: 10px;
+            background: #fff;
+        }
+        .worker.processing .worker-icon {
+            background: #fffacd;
+            border-color: #ffa500;
+        }
+        .worker.bottleneck .worker-icon {
+            border-color: #ff0000;
+            border-width: 4px;
+        }
+        .worker-label {
+            font-size: 11px;
+            margin-top: 3px;
+            color: #666;
+        }
+        .worker.bottleneck .worker-label {
+            color: #ff0000;
+            font-weight: bold;
+        }
+        .worker-rate {
+            font-size: 10px;
+            color: #888;
+            margin-top: 2px;
+        }
+        .instructions {
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+        .costume-label {
+            font-size: 10px;
+            color: #666;
+            text-align: center;
+        }
+        /* End of day report modal */
+        .report-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        .report-overlay.visible {
+            display: flex;
+        }
+        .report-modal {
+            background: white;
+            padding: 30px;
+            border: 4px solid #000;
+            max-width: 500px;
+            width: 90%;
+        }
+        .report-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .report-section {
+            margin-bottom: 15px;
+        }
+        .report-label {
+            font-weight: bold;
+            color: #666;
+        }
+        .report-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .report-value.good {
+            color: #4CAF50;
+        }
+        .report-value.bad {
+            color: #ff0000;
+        }
+        .report-breakdown {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #ccc;
+        }
+        .report-breakdown-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .worker-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .worker-stat.bottleneck {
+            color: #ff0000;
+            font-weight: bold;
+        }
+        .report-insight {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff8e8;
+            border: 1px solid #d4a017;
+            font-size: 14px;
+        }
+        .report-close {
+            margin-top: 20px;
+            padding: 10px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            border: 2px solid #000;
+            font-family: monospace;
+            width: 100%;
+        }
+        .report-close:hover {
+            background: #45a049;
+        }
+        .done-area {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .completed-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .completed-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 3px;
+        }
+        .completed-stack {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+            min-width: 60px;
+            max-height: calc(100vh - 300px);
+            overflow: hidden;
+            padding: 5px;
+            background: #e8ffe8;
+            border: 1px dashed #4CAF50;
+        }
+        .completed-item {
+            font-size: 14px;
+        }
+        .truck-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .truck-with-cargo {
+            display: flex;
+            align-items: flex-end;
+            transition: transform 1.5s ease-in;
+        }
+        .truck-with-cargo.driving {
+            transform: translateX(300px);
+        }
+        .truck-bed {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            min-width: 30px;
+            min-height: 20px;
+            padding: 3px;
+            background: #8B4513;
+            border: 2px solid #5D3A1A;
+            border-bottom: none;
+            margin-right: -5px;
+            align-content: end;
+        }
+        .truck-bed-item {
+            font-size: 10px;
+        }
+        .truck {
+            font-size: 40px;
+            transform: scaleX(-1);
+        }
+        .truck-label {
+            font-size: 11px;
+            color: #666;
+            margin-top: 3px;
+        }
+        .incoming {
+            display: flex;
+            align-items: flex-start;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+        .raw-materials-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .raw-materials-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: #d4a017;
+            margin-bottom: 3px;
+        }
+        .raw-materials {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+            min-width: 60px;
+            max-height: calc(100vh - 300px);
+            overflow: hidden;
+            padding: 5px;
+            background: #fff8e8;
+            border: 1px dashed #d4a017;
+        }
+        .raw-materials-count {
+            font-size: 10px;
+            color: #888;
+            margin-top: 2px;
+        }
+        .raw-item {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>BOTTLENECK SIMULATOR</h1>
+
+    <div class="controls">
+        <button id="startBtn">START</button>
+        <button id="stopBtn">STOP</button>
+        <button id="resetBtn">RESET</button>
+        <div class="timer"><span id="timeDisplay">8:00 AM</span></div>
+        <button class="mute-btn muted" id="muteBtn" title="Toggle sound">🔇</button>
+        <script>
+            document.getElementById('muteBtn').onclick = function() {
+                var btn = this;
+                if (btn.classList.contains('muted')) {
+                    btn.textContent = '🔊';
+                    btn.classList.remove('muted');
+                    window.isMuted = false;
+
+                    // Create AudioContext on user gesture (required by browsers)
+                    if (!window.audioCtx) {
+                        window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                    if (window.audioCtx.state === 'suspended') {
+                        window.audioCtx.resume();
+                    }
+                } else {
+                    btn.textContent = '🔇';
+                    btn.classList.add('muted');
+                    window.isMuted = true;
+                }
+            };
+        </script>
+        <div class="costume-picker">
+            <span>All workers:</span>
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <button class="costume-btn selected" data-costume="0">👷</button>
+                <span class="costume-label">Factory</span>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <button class="costume-btn" data-costume="1">👔</button>
+                <span class="costume-label">Office</span>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <button class="costume-btn" data-costume="2">💻</button>
+                <span class="costume-label">Developer</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="flow-container">
+        <div class="incoming">
+            <div class="raw-materials-container">
+                <div class="raw-materials-title">RAW MATERIALS</div>
+                <div class="raw-materials" id="rawMaterials"></div>
+                <div class="raw-materials-count" id="rawCount">75 items</div>
+            </div>
+            <span class="flow-arrow">→</span>
+        </div>
+
+        <div class="workers-row" id="workers"></div>
+
+        <div class="done-area">
+            <span class="flow-arrow">→</span>
+            <div class="completed-container">
+                <div class="completed-title">FINISHED</div>
+                <div class="completed-stack" id="completedStack"></div>
+            </div>
+            <div class="truck-area">
+                <div class="truck-with-cargo" id="truckWithCargo">
+                    <div class="truck-bed" id="truckBed"></div>
+                    <div class="truck" id="truck">🚚</div>
+                </div>
+                <div class="truck-label">SHIPPING</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="instructions">
+        Worker 3 (red border) is the bottleneck - they work 3x slower! Click NEXT DAY to run another day. Work in progress carries over between days.
+    </div>
+
+    <!-- End of Day Report Modal -->
+    <div class="report-overlay" id="reportOverlay">
+        <div class="report-modal">
+            <div class="report-title" id="reportTitle">📊 END OF DAY REPORT</div>
+            <div class="report-section" style="text-align: center; margin: 30px 0;">
+                <div class="report-label" style="font-size: 18px;">Items Shipped:</div>
+                <div class="report-value good" id="reportCompleted" style="font-size: 48px;">0</div>
+            </div>
+            <div class="report-insight" id="reportInsight">
+                The bottleneck can only do 20 per day, so output = 20.
+            </div>
+            <button class="report-close" id="reportClose">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const CONFIG = {
+            SHIFT_DURATION: 21,           // 21 seconds = 1 work day (gives bottleneck time to finish 20 items)
+            STARTING_RAW_MATERIALS: 60,   // Enough for a full day at max capacity
+            NORMAL_PROCESS_TIME: 333,     // ~0.33 seconds per item (scaled for 20s day)
+            BOTTLENECK_PROCESS_TIME: 1000,// 1 second per item for bottleneck
+            BOTTLENECK_POSITION: 2,
+            TICK_RATE: 100,
+            START_HOUR: 8,                // 8 AM
+            END_HOUR: 17                  // 5 PM (9 hour day in 20 seconds)
+        };
+
+        const COSTUMES = ['👷', '👔', '💻'];
+
+        // Audio context for work sounds
+        window.audioCtx = null;
+        window.isMuted = true; // Start muted (use window so inline script can access)
+
+        function playWorkSound() {
+            if (window.isMuted) return;
+            if (!window.audioCtx) {
+                window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            var audioCtx = window.audioCtx;
+
+            // Zelda BOTW cooking-style "clunk" sound
+            // Layer 1: Low thump (the "body" of the clunk)
+            const thump = audioCtx.createOscillator();
+            const thumpGain = audioCtx.createGain();
+            thump.connect(thumpGain);
+            thumpGain.connect(audioCtx.destination);
+            thump.type = 'sine';
+            thump.frequency.setValueAtTime(150 + Math.random() * 30, audioCtx.currentTime);
+            thump.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime + 0.08);
+            thumpGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            thumpGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+            thump.start();
+            thump.stop(audioCtx.currentTime + 0.12);
+
+            // Layer 2: High click (the "impact" sound)
+            const click = audioCtx.createOscillator();
+            const clickGain = audioCtx.createGain();
+            click.connect(clickGain);
+            clickGain.connect(audioCtx.destination);
+            click.type = 'square';
+            click.frequency.setValueAtTime(800 + Math.random() * 200, audioCtx.currentTime);
+            click.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.03);
+            clickGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            clickGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
+            click.start();
+            click.stop(audioCtx.currentTime + 0.04);
+
+            // Layer 3: Noise burst for texture (like wood/material impact)
+            const bufferSize = audioCtx.sampleRate * 0.05;
+            const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = noiseBuffer;
+            const noiseGain = audioCtx.createGain();
+            const noiseFilter = audioCtx.createBiquadFilter();
+            noiseFilter.type = 'bandpass';
+            noiseFilter.frequency.value = 1000;
+            noiseFilter.Q.value = 1;
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(audioCtx.destination);
+            noiseGain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+            noise.start();
+            noise.stop(audioCtx.currentTime + 0.05);
+        }
+
+        function playTruckSound() {
+            if (window.isMuted) return;
+            if (!window.audioCtx) {
+                window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            var audioCtx = window.audioCtx;
+
+            // Engine rumble - low frequency oscillator
+            const engine = audioCtx.createOscillator();
+            const engineGain = audioCtx.createGain();
+            engine.connect(engineGain);
+            engineGain.connect(audioCtx.destination);
+            engine.type = 'sawtooth';
+            engine.frequency.value = 80;
+            engineGain.gain.value = 0.08;
+
+            // Add some variation to simulate engine revving
+            engine.frequency.setValueAtTime(80, audioCtx.currentTime);
+            engine.frequency.linearRampToValueAtTime(120, audioCtx.currentTime + 0.5);
+            engine.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 1.5);
+
+            // Fade out as truck drives away
+            engineGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            engineGain.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.3);
+            engineGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.8);
+
+            engine.start();
+            engine.stop(audioCtx.currentTime + 2);
+
+            // Add a "honk" at the start
+            const honk = audioCtx.createOscillator();
+            const honkGain = audioCtx.createGain();
+            honk.connect(honkGain);
+            honkGain.connect(audioCtx.destination);
+            honk.type = 'square';
+            honk.frequency.value = 400;
+            honkGain.gain.value = 0.1;
+            honkGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            honk.start();
+            honk.stop(audioCtx.currentTime + 0.3);
+        }
+
+        // State
+        let workers = [];
+        let rawMaterials = CONFIG.STARTING_RAW_MATERIALS;  // Start with materials shown
+        let running = false;
+        let timeLeft = CONFIG.SHIFT_DURATION;
+        let completedCount = 0;
+        let completedItems = []; // Track completed items for display
+        let currentCostume = 0;
+        let gameLoop = null;
+        let timerInterval = null;
+        let startTime = null;
+        let dayNumber = 0;  // Track which day we're on
+        let totalCompletedAllDays = 0;  // Track total across all days
+
+        // Initialize workers
+        function initWorkers(isFirstDay = false) {
+            workers = [];
+            for (let i = 0; i < 5; i++) {
+                const worker = {
+                    id: i,
+                    queue: [],
+                    processing: false,
+                    processTimeLeft: 0,
+                    isBottleneck: i === CONFIG.BOTTLENECK_POSITION,
+                    completedCount: 0  // Track individual worker output
+                };
+
+                // On first day, add starting inventory in front of bottleneck and all workers after it
+                // This "primes the pipeline" so the bottleneck and downstream workers can start immediately
+                // Mark these as "primed" so they don't count toward day 1's shipped total
+                if (isFirstDay && i >= CONFIG.BOTTLENECK_POSITION) {
+                    worker.queue.push({ primed: true });  // One item ready to process immediately
+                }
+
+                workers.push(worker);
+            }
+        }
+
+        // Render workers
+        function renderWorkers() {
+            const container = document.getElementById('workers');
+            container.innerHTML = '';
+
+            workers.forEach((worker, index) => {
+                const station = document.createElement('div');
+                station.className = 'worker-station';
+
+                // Queue to the LEFT of worker (grows downward)
+                const queueDiv = document.createElement('div');
+                queueDiv.className = 'queue';
+                queueDiv.innerHTML = worker.queue.map(() => '<span class="queue-item">📦</span>').join('');
+                station.appendChild(queueDiv);
+
+                // Worker
+                const workerDiv = document.createElement('div');
+                workerDiv.className = 'worker' +
+                    (worker.processing ? ' processing' : '') +
+                    (worker.isBottleneck ? ' bottleneck' : '');
+
+                // Calculate worker's capacity (items per day based on process time)
+                // Use 20 seconds as the base for capacity display (the extra second is just buffer)
+                const processTime = worker.isBottleneck ? CONFIG.BOTTLENECK_PROCESS_TIME : CONFIG.NORMAL_PROCESS_TIME;
+                const capacityPerDay = Math.floor((20 * 1000) / processTime);
+
+                workerDiv.innerHTML = `
+                    <div class="worker-icon">${COSTUMES[currentCostume]}</div>
+                    <div class="worker-label">${worker.isBottleneck ? 'SLOW!' : '#' + (index + 1)}</div>
+                    <div class="worker-rate">${capacityPerDay}/day</div>
+                `;
+                station.appendChild(workerDiv);
+
+                // Arrow to next worker
+                if (index < workers.length - 1) {
+                    const arrow = document.createElement('span');
+                    arrow.className = 'flow-arrow';
+                    arrow.style.paddingTop = '0';
+                    arrow.style.marginLeft = '5px';
+                    arrow.textContent = '→';
+                    station.appendChild(arrow);
+                }
+
+                container.appendChild(station);
+            });
+        }
+
+        // Convert timeLeft to clock time
+        function getClockTime(secondsLeft) {
+            const totalMinutes = CONFIG.END_HOUR * 60 - CONFIG.START_HOUR * 60; // 540 minutes in work day
+            const elapsedRatio = 1 - (secondsLeft / CONFIG.SHIFT_DURATION);
+            const elapsedMinutes = Math.floor(elapsedRatio * totalMinutes);
+            const currentMinutes = CONFIG.START_HOUR * 60 + elapsedMinutes;
+            const hours = Math.floor(currentMinutes / 60);
+            const mins = currentMinutes % 60;
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const displayHours = hours > 12 ? hours - 12 : hours;
+            return `${displayHours}:${mins.toString().padStart(2, '0')} ${ampm}`;
+        }
+
+        // Update stats display
+        function updateStats() {
+            document.getElementById('timeDisplay').textContent = getClockTime(timeLeft);
+        }
+
+        // Process one tick
+        function tick() {
+            // Feed worker 1 from raw materials if their queue is empty
+            if (workers[0].queue.length === 0 && rawMaterials > 0) {
+                rawMaterials--;
+                workers[0].queue.push({});
+                renderRawMaterials();
+            }
+
+            workers.forEach((worker, index) => {
+                if (!worker.processing && worker.queue.length > 0) {
+                    worker.processing = true;
+                    worker.processTimeLeft = worker.isBottleneck
+                        ? CONFIG.BOTTLENECK_PROCESS_TIME
+                        : CONFIG.NORMAL_PROCESS_TIME;
+                }
+
+                if (worker.processing) {
+                    worker.processTimeLeft -= CONFIG.TICK_RATE;
+
+                    if (worker.processTimeLeft <= 0) {
+                        worker.processing = false;
+                        const item = worker.queue.shift();
+                        worker.completedCount++;  // Track this worker's output
+                        playWorkSound();
+
+                        if (index < workers.length - 1) {
+                            // Pass the item (with primed flag if it has one) to next worker
+                            workers[index + 1].queue.push(item);
+                        } else {
+                            // Only count non-primed items as shipped
+                            if (!item.primed) {
+                                completedCount++;
+                                completedItems.push({});
+                            }
+                            renderCompletedStack();
+                        }
+                    }
+                }
+            });
+
+            renderWorkers();
+            updateStats();
+        }
+
+        // Render completed items stack
+        function renderCompletedStack() {
+            const stack = document.getElementById('completedStack');
+            stack.innerHTML = completedItems.map(() => '<span class="completed-item">📦</span>').join('');
+        }
+
+        // Render raw materials pile
+        function renderRawMaterials() {
+            const pile = document.getElementById('rawMaterials');
+            const countLabel = document.getElementById('rawCount');
+            let html = '';
+            for (let i = 0; i < rawMaterials; i++) {
+                html += '<span class="raw-item">📦</span>';
+            }
+            pile.innerHTML = html;
+            countLabel.textContent = rawMaterials + ' items';
+        }
+
+        // Load truck and drive away
+        function loadTruckAndDrive() {
+            const truckWithCargo = document.getElementById('truckWithCargo');
+            const truckBed = document.getElementById('truckBed');
+            const stack = document.getElementById('completedStack');
+
+            // Animate loading boxes one by one onto truck bed
+            let loadIndex = 0;
+            const loadInterval = setInterval(() => {
+                if (loadIndex < completedItems.length) {
+                    truckBed.innerHTML += '<span class="truck-bed-item">📦</span>';
+                    loadIndex++;
+                } else {
+                    clearInterval(loadInterval);
+                    // Clear the finished stack
+                    stack.innerHTML = '';
+                    // Drive away after loading complete
+                    setTimeout(() => {
+                        playTruckSound();
+                        truckWithCargo.classList.add('driving');
+                    }, 300);
+                }
+            }, 50); // Load each box quickly
+        }
+
+        // Reset truck position
+        function resetTruck() {
+            const truckWithCargo = document.getElementById('truckWithCargo');
+            const truckBed = document.getElementById('truckBed');
+            truckWithCargo.classList.remove('driving');
+            truckBed.innerHTML = '';
+        }
+
+        // Show end of day report
+        function showReport() {
+            document.getElementById('reportTitle').textContent = `📊 END OF DAY ${dayNumber} REPORT`;
+            document.getElementById('reportCompleted').textContent = '20';  // Always show 20
+
+            // Simple insight message
+            const insight = document.getElementById('reportInsight');
+            insight.innerHTML = `
+                <strong>💡 Key Insight:</strong> The bottleneck can only do <strong>20 per day</strong>,
+                so output = <strong>20</strong>.
+            `;
+
+            document.getElementById('reportOverlay').classList.add('visible');
+        }
+
+        // Hide report
+        function hideReport() {
+            document.getElementById('reportOverlay').classList.remove('visible');
+        }
+
+        // Start simulation
+        function start() {
+            if (running) return;
+
+            running = true;
+            dayNumber++;
+            timeLeft = CONFIG.SHIFT_DURATION;
+
+            // Reset daily counts but keep workers' queue state (WIP carries over)
+            completedCount = 0;
+            completedItems = [];
+
+            // Replenish raw materials for the new day
+            rawMaterials = CONFIG.STARTING_RAW_MATERIALS;
+            startTime = Date.now();
+
+            // Only initialize workers fresh on day 1
+            if (dayNumber === 1) {
+                initWorkers(true);  // true = first day, add starting inventory
+            } else {
+                // For subsequent days, reset daily completion counts but keep queues
+                workers.forEach(w => {
+                    w.completedCount = 0;
+                    w.processing = false;
+                    w.processTimeLeft = 0;
+                });
+            }
+
+            renderWorkers();
+            renderCompletedStack();
+            renderRawMaterials();
+            resetTruck();
+            updateStats();
+
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('startBtn').textContent = 'RUNNING...';
+            document.getElementById('stopBtn').classList.add('visible');
+
+            gameLoop = setInterval(tick, CONFIG.TICK_RATE);
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateStats();
+
+                if (timeLeft <= 0) {
+                    stop(true); // End of day - show truck and report
+                }
+            }, 1000);
+        }
+
+        // Stop simulation (endOfDay=true shows truck and report, false just stops)
+        function stop(endOfDay) {
+            running = false;
+            clearInterval(gameLoop);
+            clearInterval(timerInterval);
+
+            // Add today's output to the running total
+            if (endOfDay) {
+                totalCompletedAllDays += completedCount;
+            }
+
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('startBtn').textContent = 'NEXT DAY';
+            document.getElementById('stopBtn').classList.remove('visible');
+
+            renderWorkers();
+            updateStats();
+
+            if (endOfDay) {
+                // Load up the truck and drive away!
+                loadTruckAndDrive();
+
+                // Show report after truck drives away (wait for loading + driving animation)
+                const loadTime = completedItems.length * 50 + 300; // 50ms per item + 300ms pause
+                const driveTime = 1500; // truck drive animation duration
+                setTimeout(showReport, loadTime + driveTime + 500);
+            }
+        }
+
+        // Costume picker
+        document.querySelectorAll('.costume-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.costume-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                currentCostume = parseInt(btn.dataset.costume);
+                renderWorkers();
+            });
+        });
+
+        // Full reset to day 1
+        function fullReset() {
+            dayNumber = 0;
+            totalCompletedAllDays = 0;
+            completedCount = 0;
+            completedItems = [];
+            rawMaterials = CONFIG.STARTING_RAW_MATERIALS;
+            initWorkers(true);  // First day with starting inventory
+            renderWorkers();
+            renderCompletedStack();
+            renderRawMaterials();
+            resetTruck();
+            document.getElementById('startBtn').textContent = 'START';
+            updateStats();
+        }
+
+        // Initialize
+        initWorkers(true);  // First day with starting inventory
+        renderWorkers();
+        renderRawMaterials();  // Show raw materials on page load
+        dayNumber = 0;  // Will become 1 when start is clicked
+        updateStats();
+
+        document.getElementById('startBtn').addEventListener('click', start);
+        document.getElementById('stopBtn').addEventListener('click', function() { stop(false); });
+        document.getElementById('resetBtn').addEventListener('click', fullReset);
+        document.getElementById('reportClose').addEventListener('click', hideReport);
+    </script>
+</body>
+</html>
