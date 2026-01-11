@@ -4,125 +4,190 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <title>Bottleneck Simulator</title>
     <style>
         * {
             box-sizing: border-box;
         }
         body {
-            font-family: monospace;
-            background: #f0f0f0;
-            padding: 20px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            padding: 30px;
             max-width: 1100px;
             margin: 0 auto;
+            min-height: 100vh;
         }
         h1 {
-            margin: 0 0 20px 0;
+            margin: 0 0 24px 0;
+            font-weight: 700;
+            font-size: 28px;
+            color: #1a1a2e;
+            letter-spacing: -0.5px;
         }
-        /* Stats bar styles removed */
         .controls {
             display: flex;
-            gap: 20px;
+            gap: 16px;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
             flex-wrap: wrap;
         }
         #startBtn {
-            font-size: 24px;
-            padding: 10px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            padding: 12px 28px;
             cursor: pointer;
-            background: #4CAF50;
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
             color: white;
-            border: 2px solid #000;
-            font-family: monospace;
+            border: none;
+            border-radius: 12px;
+            font-family: inherit;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+            transition: all 0.2s ease;
         }
         #startBtn:hover {
-            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
         }
         #startBtn:disabled {
-            background: #ccc;
+            background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+            box-shadow: none;
             cursor: not-allowed;
+            transform: none;
         }
         #stopBtn {
-            font-size: 24px;
-            padding: 10px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            padding: 12px 28px;
             cursor: pointer;
-            background: #f44336;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             color: white;
-            border: 2px solid #000;
-            font-family: monospace;
+            border: none;
+            border-radius: 12px;
+            font-family: inherit;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            transition: all 0.2s ease;
             display: none;
         }
         #stopBtn:hover {
-            background: #d32f2f;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
         }
         #stopBtn.visible {
             display: inline-block;
         }
         #resetBtn {
-            font-size: 16px;
-            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 10px 20px;
             cursor: pointer;
-            background: #666;
-            color: white;
-            border: 2px solid #000;
-            font-family: monospace;
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-family: inherit;
+            transition: all 0.2s ease;
         }
         #resetBtn:hover {
-            background: #555;
+            background: #e5e7eb;
+            border-color: #9ca3af;
         }
         .timer {
-            font-size: 24px;
-            font-weight: bold;
+            font-size: 22px;
+            font-weight: 600;
+            color: #374151;
+            background: white;
+            padding: 10px 18px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
         .costume-picker {
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 16px;
+            font-size: 14px;
+            color: #6b7280;
         }
         .costume-btn {
-            font-size: 30px;
-            padding: 5px 10px;
+            font-size: 28px;
+            padding: 8px 12px;
             cursor: pointer;
-            border: 2px solid #ccc;
-            background: #fff;
-            border-radius: 5px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 10px;
+            transition: all 0.2s ease;
         }
         .costume-btn:hover {
-            border-color: #666;
+            border-color: #9ca3af;
+            transform: scale(1.05);
         }
         .costume-btn.selected {
-            border-color: #000;
-            background: #e0e0e0;
+            border-color: #3b82f6;
+            background: #eff6ff;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
         }
         .mute-btn {
-            font-size: 24px;
-            padding: 5px 12px;
+            font-size: 22px;
+            padding: 8px 14px;
             cursor: pointer;
-            border: 2px solid #ccc;
-            background: #fff;
-            border-radius: 5px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 10px;
+            transition: all 0.2s ease;
         }
         .mute-btn:hover {
-            border-color: #666;
+            border-color: #9ca3af;
         }
         .mute-btn.muted {
-            background: #ffeeee;
-            border-color: #ff6666;
+            background: #fef2f2;
+            border-color: #fca5a5;
+        }
+        #randomizeBtn {
+            font-size: 14px;
+            font-weight: 500;
+            padding: 10px 20px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+            transition: all 0.2s ease;
+        }
+        #randomizeBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+        }
+        .options-bar {
+            margin-top: 16px;
+            padding: 16px 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
         }
         .flow-container {
             display: flex;
             align-items: flex-start;
-            gap: 10px;
-            background: #fff;
-            padding: 20px;
-            border: 2px solid #000;
+            gap: 12px;
+            background: white;
+            padding: 24px;
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         }
         .flow-arrow {
-            font-size: 24px;
+            font-size: 22px;
             flex-shrink: 0;
             padding-top: 15px;
+            color: #9ca3af;
         }
         .workers-row {
             display: flex;
@@ -137,15 +202,16 @@
         .queue {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 2px;
+            gap: 3px;
             min-width: 40px;
             min-height: 50px;
             max-height: calc(100vh - 300px);
             overflow: hidden;
-            padding: 5px;
-            background: #f9f9f9;
-            border: 1px dashed #ccc;
-            margin-right: 5px;
+            padding: 8px;
+            background: #f8fafc;
+            border: 2px dashed #e2e8f0;
+            border-radius: 10px;
+            margin-right: 6px;
         }
         .queue-item {
             font-size: 14px;
@@ -156,43 +222,50 @@
             align-items: center;
         }
         .worker-icon {
-            font-size: 40px;
-            padding: 8px;
-            border: 3px solid #ccc;
-            border-radius: 10px;
-            background: #fff;
+            font-size: 52px;
+            padding: 14px;
+            border: 3px solid #e2e8f0;
+            border-radius: 14px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: all 0.2s ease;
         }
         .worker.processing .worker-icon {
-            background: #fffacd;
-            border-color: #ffa500;
+            background: linear-gradient(135deg, #fef9c3 0%, #fef08a 100%);
+            border-color: #facc15;
+            box-shadow: 0 4px 12px rgba(250, 204, 21, 0.3);
         }
         .worker.bottleneck .worker-icon {
-            border-color: #ff0000;
-            border-width: 4px;
+            border-color: #f87171;
+            border-width: 3px;
+            box-shadow: 0 2px 8px rgba(248, 113, 113, 0.2);
         }
         .worker-label {
             font-size: 11px;
-            margin-top: 3px;
-            color: #666;
+            font-weight: 500;
+            margin-top: 6px;
+            color: #6b7280;
         }
         .worker.bottleneck .worker-label {
-            color: #ff0000;
-            font-weight: bold;
+            color: #ef4444;
+            font-weight: 600;
         }
         .worker-rate {
             font-size: 10px;
-            color: #888;
+            color: #9ca3af;
             margin-top: 2px;
         }
         .instructions {
             margin-top: 20px;
-            color: #666;
+            color: #6b7280;
             font-size: 14px;
+            line-height: 1.5;
         }
         .costume-label {
             font-size: 10px;
-            color: #666;
+            color: #9ca3af;
             text-align: center;
+            margin-top: 4px;
         }
         /* End of day report modal */
         .report-overlay {
@@ -202,7 +275,8 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
             z-index: 100;
             justify-content: center;
             align-items: center;
@@ -212,78 +286,89 @@
         }
         .report-modal {
             background: white;
-            padding: 30px;
-            border: 4px solid #000;
-            max-width: 500px;
+            padding: 32px;
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            max-width: 420px;
             width: 90%;
         }
         .report-title {
-            font-size: 24px;
-            font-weight: bold;
+            font-size: 22px;
+            font-weight: 700;
             margin-bottom: 20px;
             text-align: center;
+            color: #1a1a2e;
         }
         .report-section {
             margin-bottom: 15px;
         }
         .report-label {
-            font-weight: bold;
-            color: #666;
+            font-weight: 600;
+            color: #6b7280;
         }
         .report-value {
             font-size: 20px;
-            font-weight: bold;
+            font-weight: 700;
         }
         .report-value.good {
-            color: #4CAF50;
+            color: #22c55e;
         }
         .report-value.bad {
-            color: #ff0000;
+            color: #ef4444;
         }
         .report-breakdown {
             margin-top: 20px;
             padding-top: 15px;
-            border-top: 2px solid #ccc;
+            border-top: 2px solid #f3f4f6;
         }
         .report-breakdown-title {
-            font-weight: bold;
+            font-weight: 600;
             margin-bottom: 10px;
         }
         .worker-stat {
             display: flex;
             justify-content: space-between;
             padding: 5px 0;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #f3f4f6;
         }
         .worker-stat.bottleneck {
-            color: #ff0000;
-            font-weight: bold;
+            color: #ef4444;
+            font-weight: 600;
         }
         .report-insight {
             margin-top: 20px;
-            padding: 15px;
-            background: #fff8e8;
-            border: 1px solid #d4a017;
+            padding: 16px;
+            background: linear-gradient(135deg, #fef9c3 0%, #fef3c7 100%);
+            border: none;
+            border-radius: 12px;
             font-size: 14px;
+            line-height: 1.5;
+            color: #854d0e;
         }
         .report-close {
-            margin-top: 20px;
-            padding: 10px 30px;
-            font-size: 18px;
+            margin-top: 24px;
+            padding: 14px 30px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            background: #4CAF50;
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
             color: white;
-            border: 2px solid #000;
-            font-family: monospace;
+            border: none;
+            border-radius: 12px;
+            font-family: inherit;
             width: 100%;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+            transition: all 0.2s ease;
         }
         .report-close:hover {
-            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
         }
         .done-area {
             display: flex;
             align-items: flex-start;
-            gap: 10px;
+            gap: 12px;
             flex-shrink: 0;
         }
         .completed-container {
@@ -293,20 +378,21 @@
         }
         .completed-title {
             font-size: 11px;
-            font-weight: bold;
-            color: #4CAF50;
-            margin-bottom: 3px;
+            font-weight: 600;
+            color: #22c55e;
+            margin-bottom: 4px;
         }
         .completed-stack {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 2px;
+            gap: 3px;
             min-width: 60px;
             max-height: calc(100vh - 300px);
             overflow: hidden;
-            padding: 5px;
-            background: #e8ffe8;
-            border: 1px dashed #4CAF50;
+            padding: 8px;
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            border: 2px dashed #86efac;
+            border-radius: 10px;
         }
         .completed-item {
             font-size: 14px;
@@ -320,10 +406,10 @@
         .truck-with-cargo {
             display: flex;
             align-items: flex-end;
-            transition: transform 1.5s ease-in;
+            transition: transform 2.5s cubic-bezier(0.1, 0, 0.3, 1);
         }
         .truck-with-cargo.driving {
-            transform: translateX(300px);
+            transform: translateX(400px);
         }
         .truck-bed {
             display: grid;
@@ -332,9 +418,10 @@
             min-width: 30px;
             min-height: 20px;
             padding: 3px;
-            background: #8B4513;
-            border: 2px solid #5D3A1A;
+            background: linear-gradient(135deg, #a16207 0%, #854d0e 100%);
+            border: 2px solid #713f12;
             border-bottom: none;
+            border-radius: 4px 4px 0 0;
             margin-right: -5px;
             align-content: end;
         }
@@ -347,13 +434,14 @@
         }
         .truck-label {
             font-size: 11px;
-            color: #666;
-            margin-top: 3px;
+            font-weight: 500;
+            color: #6b7280;
+            margin-top: 4px;
         }
         .incoming {
             display: flex;
             align-items: flex-start;
-            gap: 5px;
+            gap: 8px;
             flex-shrink: 0;
         }
         .raw-materials-container {
@@ -363,25 +451,26 @@
         }
         .raw-materials-title {
             font-size: 11px;
-            font-weight: bold;
-            color: #d4a017;
-            margin-bottom: 3px;
+            font-weight: 600;
+            color: #d97706;
+            margin-bottom: 4px;
         }
         .raw-materials {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 2px;
+            gap: 3px;
             min-width: 60px;
             max-height: calc(100vh - 300px);
             overflow: hidden;
-            padding: 5px;
-            background: #fff8e8;
-            border: 1px dashed #d4a017;
+            padding: 8px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px dashed #fbbf24;
+            border-radius: 10px;
         }
         .raw-materials-count {
             font-size: 10px;
-            color: #888;
-            margin-top: 2px;
+            color: #9ca3af;
+            margin-top: 4px;
         }
         .raw-item {
             font-size: 14px;
@@ -390,9 +479,10 @@
 </head>
 <body>
     <h1>BOTTLENECK SIMULATOR</h1>
+    <p style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a></p>
 
     <div class="controls">
-        <button id="startBtn">START</button>
+        <button id="startBtn">START DAY 1</button>
         <button id="stopBtn">STOP</button>
         <button id="resetBtn">RESET</button>
         <div class="timer"><span id="timeDisplay">8:00 AM</span></div>
@@ -419,22 +509,7 @@
                 }
             };
         </script>
-        <div class="costume-picker">
-            <span>All workers:</span>
-            <div style="display: flex; flex-direction: column; align-items: center;">
-                <button class="costume-btn selected" data-costume="0">👷</button>
-                <span class="costume-label">Factory</span>
-            </div>
-            <div style="display: flex; flex-direction: column; align-items: center;">
-                <button class="costume-btn" data-costume="1">👔</button>
-                <span class="costume-label">Office</span>
-            </div>
-            <div style="display: flex; flex-direction: column; align-items: center;">
-                <button class="costume-btn" data-costume="2">💻</button>
-                <span class="costume-label">Developer</span>
-            </div>
         </div>
-    </div>
 
     <div class="flow-container">
         <div class="incoming">
@@ -464,8 +539,27 @@
         </div>
     </div>
 
-    <div class="instructions">
-        Worker 3 (red border) is the bottleneck - they work 3x slower! Click NEXT DAY to run another day. Work in progress carries over between days.
+    <div class="instructions" id="instructions">
+        <strong style="color: #ef4444;">🔴 KEY LESSON:</strong> <span id="bottleneckText">Worker #3 is the BOTTLENECK</span> — it has the lowest capacity, so it limits the entire system's output. No matter how fast the other workers are, the system can only produce what the bottleneck can handle.
+    </div>
+
+    <div class="options-bar">
+        <div class="costume-picker">
+            <span>All workplaces have bottlenecks:</span>
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <button class="costume-btn selected" data-costume="0">👷‍♀️</button>
+                <span class="costume-label">Factory</span>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <button class="costume-btn" data-costume="1">🧑‍💼</button>
+                <span class="costume-label">Office</span>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <button class="costume-btn" data-costume="2">👩‍💻</button>
+                <span class="costume-label">Developer</span>
+            </div>
+        </div>
+        <button id="randomizeBtn">🎲 RANDOMIZE BOTTLENECK</button>
     </div>
 
     <!-- End of Day Report Modal -->
@@ -486,17 +580,18 @@
     <script>
         // Configuration
         const CONFIG = {
-            SHIFT_DURATION: 21,           // 21 seconds = 1 work day (gives bottleneck time to finish 20 items)
+            SHIFT_DURATION: 21,           // 21 seconds = 1 work day
             STARTING_RAW_MATERIALS: 60,   // Enough for a full day at max capacity
-            NORMAL_PROCESS_TIME: 333,     // ~0.33 seconds per item (scaled for 20s day)
-            BOTTLENECK_PROCESS_TIME: 1000,// 1 second per item for bottleneck
-            BOTTLENECK_POSITION: 2,
             TICK_RATE: 100,
             START_HOUR: 8,                // 8 AM
             END_HOUR: 17                  // 5 PM (9 hour day in 20 seconds)
         };
 
-        const COSTUMES = ['👷', '👔', '💻'];
+        // Worker capacities (items per day) - can be randomized
+        let workerCapacities = [60, 60, 20, 60, 60];  // Default: worker 3 is bottleneck at 20/day
+        let bottleneckPosition = 2;  // Index of slowest worker
+
+        const COSTUMES = ['👷‍♀️', '🧑‍💼', '👩‍💻'];
 
         // Audio context for work sounds
         window.audioCtx = null;
@@ -565,40 +660,100 @@
                 window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             }
             var audioCtx = window.audioCtx;
+            var t = audioCtx.currentTime;
 
-            // Engine rumble - low frequency oscillator
-            const engine = audioCtx.createOscillator();
-            const engineGain = audioCtx.createGain();
-            engine.connect(engineGain);
-            engineGain.connect(audioCtx.destination);
-            engine.type = 'sawtooth';
-            engine.frequency.value = 80;
-            engineGain.gain.value = 0.08;
+            // Layer 1: Deep diesel engine rumble (very low frequency)
+            const bassRumble = audioCtx.createOscillator();
+            const bassGain = audioCtx.createGain();
+            bassRumble.connect(bassGain);
+            bassGain.connect(audioCtx.destination);
+            bassRumble.type = 'sawtooth';
+            bassRumble.frequency.setValueAtTime(35, t);
+            bassRumble.frequency.linearRampToValueAtTime(50, t + 0.3);
+            bassRumble.frequency.linearRampToValueAtTime(45, t + 1.5);
+            bassGain.gain.setValueAtTime(0.12, t);
+            bassGain.gain.linearRampToValueAtTime(0.15, t + 0.3);
+            bassGain.gain.exponentialRampToValueAtTime(0.01, t + 2.2);
+            bassRumble.start(t);
+            bassRumble.stop(t + 2.2);
 
-            // Add some variation to simulate engine revving
-            engine.frequency.setValueAtTime(80, audioCtx.currentTime);
-            engine.frequency.linearRampToValueAtTime(120, audioCtx.currentTime + 0.5);
-            engine.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 1.5);
+            // Layer 2: Mid-frequency engine chug (the "putt-putt" character)
+            const midEngine = audioCtx.createOscillator();
+            const midGain = audioCtx.createGain();
+            midEngine.connect(midGain);
+            midGain.connect(audioCtx.destination);
+            midEngine.type = 'square';
+            midEngine.frequency.setValueAtTime(70, t);
+            midEngine.frequency.linearRampToValueAtTime(100, t + 0.4);
+            midEngine.frequency.linearRampToValueAtTime(85, t + 1.5);
+            midGain.gain.setValueAtTime(0.04, t);
+            midGain.gain.linearRampToValueAtTime(0.06, t + 0.3);
+            midGain.gain.exponentialRampToValueAtTime(0.01, t + 2);
+            midEngine.start(t);
+            midEngine.stop(t + 2);
 
-            // Fade out as truck drives away
-            engineGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-            engineGain.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.3);
-            engineGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.8);
+            // Layer 3: Engine noise texture (filtered noise for that rough diesel sound)
+            const noiseLength = audioCtx.sampleRate * 2.5;
+            const noiseBuffer = audioCtx.createBuffer(1, noiseLength, audioCtx.sampleRate);
+            const noiseData = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < noiseLength; i++) {
+                noiseData[i] = Math.random() * 2 - 1;
+            }
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = noiseBuffer;
+            const noiseFilter = audioCtx.createBiquadFilter();
+            noiseFilter.type = 'lowpass';
+            noiseFilter.frequency.value = 400;
+            noiseFilter.Q.value = 2;
+            const noiseGain = audioCtx.createGain();
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(audioCtx.destination);
+            noiseGain.gain.setValueAtTime(0.08, t);
+            noiseGain.gain.linearRampToValueAtTime(0.1, t + 0.3);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 2.2);
+            noise.start(t);
+            noise.stop(t + 2.2);
 
-            engine.start();
-            engine.stop(audioCtx.currentTime + 2);
+            // Layer 4: Truck horn - deeper, more "honky" dual-tone
+            const horn1 = audioCtx.createOscillator();
+            const horn2 = audioCtx.createOscillator();
+            const hornGain = audioCtx.createGain();
+            horn1.connect(hornGain);
+            horn2.connect(hornGain);
+            hornGain.connect(audioCtx.destination);
+            horn1.type = 'square';
+            horn2.type = 'square';
+            horn1.frequency.value = 277;  // C#4 - classic truck horn note
+            horn2.frequency.value = 349;  // F4 - second note for that truck sound
+            hornGain.gain.setValueAtTime(0.08, t);
+            hornGain.gain.setValueAtTime(0.08, t + 0.4);
+            hornGain.gain.exponentialRampToValueAtTime(0.01, t + 0.5);
+            horn1.start(t);
+            horn2.start(t);
+            horn1.stop(t + 0.5);
+            horn2.stop(t + 0.5);
 
-            // Add a "honk" at the start
-            const honk = audioCtx.createOscillator();
-            const honkGain = audioCtx.createGain();
-            honk.connect(honkGain);
-            honkGain.connect(audioCtx.destination);
-            honk.type = 'square';
-            honk.frequency.value = 400;
-            honkGain.gain.value = 0.1;
-            honkGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-            honk.start();
-            honk.stop(audioCtx.currentTime + 0.3);
+            // Layer 5: Air brake hiss at the start
+            const hissLength = audioCtx.sampleRate * 0.3;
+            const hissBuffer = audioCtx.createBuffer(1, hissLength, audioCtx.sampleRate);
+            const hissData = hissBuffer.getChannelData(0);
+            for (let i = 0; i < hissLength; i++) {
+                hissData[i] = Math.random() * 2 - 1;
+            }
+            const hiss = audioCtx.createBufferSource();
+            hiss.buffer = hissBuffer;
+            const hissFilter = audioCtx.createBiquadFilter();
+            hissFilter.type = 'highpass';
+            hissFilter.frequency.value = 3000;
+            const hissGain = audioCtx.createGain();
+            hiss.connect(hissFilter);
+            hissFilter.connect(hissGain);
+            hissGain.connect(audioCtx.destination);
+            hissGain.gain.setValueAtTime(0.15, t);
+            hissGain.gain.exponentialRampToValueAtTime(0.01, t + 0.25);
+            hiss.start(t);
+            hiss.stop(t + 0.3);
         }
 
         // State
@@ -615,8 +770,35 @@
         let dayNumber = 0;  // Track which day we're on
         let totalCompletedAllDays = 0;  // Track total across all days
 
+        // Calculate process time from capacity (items per day in 20 seconds)
+        function getProcessTime(capacity) {
+            return Math.floor((20 * 1000) / capacity);  // ms per item
+        }
+
+        // Find the bottleneck (worker with lowest capacity)
+        function findBottleneck() {
+            let minCapacity = workerCapacities[0];
+            let minIndex = 0;
+            for (let i = 1; i < workerCapacities.length; i++) {
+                if (workerCapacities[i] < minCapacity) {
+                    minCapacity = workerCapacities[i];
+                    minIndex = i;
+                }
+            }
+            bottleneckPosition = minIndex;
+            return minIndex;
+        }
+
+        // Update the instruction text to reflect current bottleneck
+        function updateBottleneckText() {
+            const bottleneckCapacity = workerCapacities[bottleneckPosition];
+            document.getElementById('bottleneckText').textContent =
+                `Worker #${bottleneckPosition + 1} is the BOTTLENECK (only ${bottleneckCapacity}/day)`;
+        }
+
         // Initialize workers
         function initWorkers(isFirstDay = false) {
+            findBottleneck();
             workers = [];
             for (let i = 0; i < 5; i++) {
                 const worker = {
@@ -624,19 +806,21 @@
                     queue: [],
                     processing: false,
                     processTimeLeft: 0,
-                    isBottleneck: i === CONFIG.BOTTLENECK_POSITION,
+                    isBottleneck: i === bottleneckPosition,
+                    capacity: workerCapacities[i],
                     completedCount: 0  // Track individual worker output
                 };
 
                 // On first day, add starting inventory in front of bottleneck and all workers after it
                 // This "primes the pipeline" so the bottleneck and downstream workers can start immediately
                 // Mark these as "primed" so they don't count toward day 1's shipped total
-                if (isFirstDay && i >= CONFIG.BOTTLENECK_POSITION) {
+                if (isFirstDay && i >= bottleneckPosition) {
                     worker.queue.push({ primed: true });  // One item ready to process immediately
                 }
 
                 workers.push(worker);
             }
+            updateBottleneckText();
         }
 
         // Render workers
@@ -660,15 +844,10 @@
                     (worker.processing ? ' processing' : '') +
                     (worker.isBottleneck ? ' bottleneck' : '');
 
-                // Calculate worker's capacity (items per day based on process time)
-                // Use 20 seconds as the base for capacity display (the extra second is just buffer)
-                const processTime = worker.isBottleneck ? CONFIG.BOTTLENECK_PROCESS_TIME : CONFIG.NORMAL_PROCESS_TIME;
-                const capacityPerDay = Math.floor((20 * 1000) / processTime);
-
                 workerDiv.innerHTML = `
                     <div class="worker-icon">${COSTUMES[currentCostume]}</div>
                     <div class="worker-label">${worker.isBottleneck ? 'SLOW!' : '#' + (index + 1)}</div>
-                    <div class="worker-rate">${capacityPerDay}/day</div>
+                    <div class="worker-rate">${worker.capacity}/day</div>
                 `;
                 station.appendChild(workerDiv);
 
@@ -716,9 +895,7 @@
             workers.forEach((worker, index) => {
                 if (!worker.processing && worker.queue.length > 0) {
                     worker.processing = true;
-                    worker.processTimeLeft = worker.isBottleneck
-                        ? CONFIG.BOTTLENECK_PROCESS_TIME
-                        : CONFIG.NORMAL_PROCESS_TIME;
+                    worker.processTimeLeft = getProcessTime(worker.capacity);
                 }
 
                 if (worker.processing) {
@@ -802,14 +979,15 @@
 
         // Show end of day report
         function showReport() {
+            const bottleneckCapacity = workerCapacities[bottleneckPosition];
             document.getElementById('reportTitle').textContent = `📊 END OF DAY ${dayNumber} REPORT`;
-            document.getElementById('reportCompleted').textContent = '20';  // Always show 20
+            document.getElementById('reportCompleted').textContent = bottleneckCapacity;
 
             // Simple insight message
             const insight = document.getElementById('reportInsight');
             insight.innerHTML = `
-                <strong>💡 Key Insight:</strong> The bottleneck can only do <strong>20 per day</strong>,
-                so output = <strong>20</strong>.
+                <strong>💡 Key Insight:</strong> Worker #${bottleneckPosition + 1} (the bottleneck) can only do <strong>${bottleneckCapacity} per day</strong>,
+                so output = <strong>${bottleneckCapacity}</strong>.
             `;
 
             document.getElementById('reportOverlay').classList.add('visible');
@@ -855,7 +1033,7 @@
             updateStats();
 
             document.getElementById('startBtn').disabled = true;
-            document.getElementById('startBtn').textContent = 'RUNNING...';
+            document.getElementById('startBtn').textContent = `RUNNING DAY ${dayNumber}...`;
             document.getElementById('stopBtn').classList.add('visible');
 
             gameLoop = setInterval(tick, CONFIG.TICK_RATE);
@@ -882,7 +1060,7 @@
             }
 
             document.getElementById('startBtn').disabled = false;
-            document.getElementById('startBtn').textContent = 'NEXT DAY';
+            document.getElementById('startBtn').textContent = `START DAY ${dayNumber + 1}`;
             document.getElementById('stopBtn').classList.remove('visible');
 
             renderWorkers();
@@ -921,7 +1099,32 @@
             renderCompletedStack();
             renderRawMaterials();
             resetTruck();
-            document.getElementById('startBtn').textContent = 'START';
+            document.getElementById('startBtn').textContent = 'START DAY 1';
+            updateStats();
+        }
+
+        // Randomize capacities between 30 and 60 for all workers
+        function randomizeCapacities() {
+            if (running) return;  // Don't randomize while running
+
+            // Generate random capacities between 30 and 60
+            workerCapacities = [];
+            for (let i = 0; i < 5; i++) {
+                workerCapacities.push(Math.floor(Math.random() * 31) + 30);  // 30-60
+            }
+
+            // Full reset with new capacities
+            dayNumber = 0;
+            totalCompletedAllDays = 0;
+            completedCount = 0;
+            completedItems = [];
+            rawMaterials = CONFIG.STARTING_RAW_MATERIALS;
+            initWorkers(true);
+            renderWorkers();
+            renderCompletedStack();
+            renderRawMaterials();
+            resetTruck();
+            document.getElementById('startBtn').textContent = 'START DAY 1';
             updateStats();
         }
 
@@ -935,6 +1138,7 @@
         document.getElementById('startBtn').addEventListener('click', start);
         document.getElementById('stopBtn').addEventListener('click', function() { stop(false); });
         document.getElementById('resetBtn').addEventListener('click', fullReset);
+        document.getElementById('randomizeBtn').addEventListener('click', randomizeCapacities);
         document.getElementById('reportClose').addEventListener('click', hideReport);
     </script>
 </body>
