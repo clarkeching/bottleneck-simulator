@@ -475,11 +475,239 @@
         .raw-item {
             font-size: 14px;
         }
+
+        /* Compact count display for mobile */
+        .compact-count {
+            display: none;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .compact-count.raw {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px dashed #fbbf24;
+            color: #92400e;
+        }
+        .compact-count.finished {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            border: 2px dashed #86efac;
+            color: #166534;
+        }
+        .queue-count {
+            display: none;
+            font-size: 10px;
+            color: #6b7280;
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-bottom: 4px;
+        }
+
+        /* Mobile responsive styles - two column layout */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+            h1 {
+                font-size: 18px;
+                margin-bottom: 8px;
+            }
+            .byline {
+                margin: -8px 0 12px 0 !important;
+                font-size: 12px !important;
+            }
+            .controls {
+                gap: 8px;
+                margin-bottom: 12px;
+            }
+            #startBtn, #stopBtn {
+                font-size: 12px;
+                padding: 8px 14px;
+            }
+            #resetBtn {
+                font-size: 11px;
+                padding: 6px 12px;
+            }
+            .timer {
+                font-size: 14px;
+                padding: 6px 10px;
+            }
+            .mute-btn {
+                font-size: 18px;
+                padding: 6px 10px;
+            }
+
+            /* Two-column layout with bottom row */
+            .flow-container {
+                display: grid;
+                grid-template-columns: auto 1fr;
+                grid-template-rows: auto auto;
+                gap: 12px;
+                padding: 12px;
+                align-items: start;
+            }
+
+            /* Left column: raw materials */
+            .incoming {
+                grid-column: 1;
+                grid-row: 1;
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            }
+            .incoming .flow-arrow {
+                display: none;
+            }
+
+            /* Right column: workers */
+            .workers-row {
+                grid-column: 2;
+                grid-row: 1;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+                justify-content: space-between;
+            }
+
+            /* Bottom row: finished goods */
+            .done-area {
+                grid-column: 1 / 3;
+                grid-row: 2;
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+            }
+            .done-area .flow-arrow {
+                display: none;
+            }
+
+            /* Hide individual boxes, show counts */
+            .raw-materials,
+            .completed-stack {
+                display: none;
+            }
+            .compact-count {
+                display: block;
+            }
+
+            /* Compact workers */
+            .worker-station {
+                flex-direction: row;
+                align-items: center;
+                gap: 4px;
+            }
+            .worker-station .flow-arrow {
+                display: none;
+            }
+            .queue {
+                display: none;
+            }
+            .queue-count {
+                display: block;
+            }
+            .worker-icon {
+                font-size: clamp(24px, 6vh, 36px);
+                padding: clamp(4px, 1vh, 10px);
+                border-width: 2px;
+                border-radius: 10px;
+            }
+            .worker-label {
+                font-size: 9px;
+                margin-top: 2px;
+            }
+            .worker-rate {
+                font-size: 8px;
+            }
+
+            /* Compact truck */
+            .truck-area {
+                transform: scale(0.8);
+                transform-origin: top center;
+            }
+            .truck-with-cargo.driving {
+                transform: translateX(150px);
+            }
+
+            /* Compact info */
+            .raw-materials-title,
+            .completed-title {
+                font-size: 9px;
+            }
+            .raw-materials-count {
+                font-size: 9px;
+            }
+
+            .instructions {
+                font-size: 11px;
+                margin-top: 10px;
+                line-height: 1.4;
+            }
+
+            /* Simplify options bar on mobile */
+            .options-bar {
+                padding: 10px;
+                justify-content: center;
+            }
+            .costume-picker {
+                display: none;
+            }
+            #randomizeBtn {
+                width: auto;
+                font-size: 12px;
+                padding: 8px 16px;
+            }
+        }
+
+        /* Extra small screens (phones in portrait) */
+        @media (max-width: 400px) {
+            body {
+                padding: 8px;
+            }
+            h1 {
+                font-size: 16px;
+            }
+            .controls {
+                gap: 6px;
+            }
+            #startBtn, #stopBtn {
+                font-size: 11px;
+                padding: 6px 10px;
+            }
+            .timer {
+                font-size: 12px;
+                padding: 5px 8px;
+            }
+            .worker-icon {
+                font-size: clamp(20px, 5vh, 28px);
+                padding: clamp(3px, 0.8vh, 6px);
+            }
+            .instructions {
+                font-size: 10px;
+            }
+        }
+
+        /* Very short screens (landscape phones) */
+        @media (max-height: 500px) and (max-width: 768px) {
+            .worker-icon {
+                font-size: 20px;
+                padding: 4px;
+            }
+            .worker-label,
+            .worker-rate {
+                display: none;
+            }
+            .instructions {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
     <h1>BOTTLENECK SIMULATOR</h1>
-    <p style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a></p>
+    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a></p>
 
     <div class="controls">
         <button id="startBtn">START DAY 1</button>
@@ -516,6 +744,7 @@
             <div class="raw-materials-container">
                 <div class="raw-materials-title">RAW MATERIALS</div>
                 <div class="raw-materials" id="rawMaterials"></div>
+                <div class="compact-count raw" id="rawCompact">📦 ×60</div>
                 <div class="raw-materials-count" id="rawCount">75 items</div>
             </div>
             <span class="flow-arrow">→</span>
@@ -528,6 +757,7 @@
             <div class="completed-container">
                 <div class="completed-title">FINISHED</div>
                 <div class="completed-stack" id="completedStack"></div>
+                <div class="compact-count finished" id="finishedCompact">📦 ×0</div>
             </div>
             <div class="truck-area">
                 <div class="truck-with-cargo" id="truckWithCargo">
@@ -832,7 +1062,13 @@
                 const station = document.createElement('div');
                 station.className = 'worker-station';
 
-                // Queue to the LEFT of worker (grows downward)
+                // Queue count for mobile (shown instead of individual boxes)
+                const queueCount = document.createElement('div');
+                queueCount.className = 'queue-count';
+                queueCount.textContent = worker.queue.length > 0 ? `📦×${worker.queue.length}` : '';
+                station.appendChild(queueCount);
+
+                // Queue to the LEFT of worker (grows downward) - hidden on mobile
                 const queueDiv = document.createElement('div');
                 queueDiv.className = 'queue';
                 queueDiv.innerHTML = worker.queue.map(() => '<span class="queue-item">📦</span>').join('');
@@ -930,6 +1166,8 @@
         function renderCompletedStack() {
             const stack = document.getElementById('completedStack');
             stack.innerHTML = completedItems.map(() => '<span class="completed-item">📦</span>').join('');
+            // Update compact display for mobile
+            document.getElementById('finishedCompact').textContent = `📦 ×${completedItems.length}`;
         }
 
         // Render raw materials pile
@@ -942,6 +1180,8 @@
             }
             pile.innerHTML = html;
             countLabel.textContent = rawMaterials + ' items';
+            // Update compact display for mobile
+            document.getElementById('rawCompact').textContent = `📦 ×${rawMaterials}`;
         }
 
         // Load truck and drive away
@@ -1085,6 +1325,22 @@
                 currentCostume = parseInt(btn.dataset.costume);
                 renderWorkers();
             });
+        });
+
+        // Cycle costume (for mobile tap on workers)
+        function cycleCostume() {
+            currentCostume = (currentCostume + 1) % COSTUMES.length;
+            // Update desktop buttons too
+            document.querySelectorAll('.costume-btn').forEach(b => b.classList.remove('selected'));
+            document.querySelector(`.costume-btn[data-costume="${currentCostume}"]`).classList.add('selected');
+            renderWorkers();
+        }
+
+        // Make workers tappable on mobile to change costume
+        document.getElementById('workers').addEventListener('click', function(e) {
+            if (window.innerWidth <= 768 && e.target.closest('.worker-icon')) {
+                cycleCostume();
+            }
         });
 
         // Full reset to day 1
