@@ -573,14 +573,15 @@
                 flex-direction: column;
                 gap: 20px;
                 padding: 16px;
-                align-items: center;
+                align-items: stretch;
             }
 
-            /* Top row: raw materials */
+            /* Top row: raw materials - left aligned */
             .incoming {
                 flex-direction: row;
                 align-items: center;
                 gap: 12px;
+                justify-content: flex-start;
             }
             .incoming .flow-arrow {
                 display: block;
@@ -596,11 +597,11 @@
                 width: 100%;
             }
 
-            /* Bottom row: finished goods */
+            /* Bottom row: finished goods - left aligned */
             .done-area {
                 flex-direction: row;
                 align-items: center;
-                justify-content: center;
+                justify-content: flex-start;
                 gap: 16px;
             }
             .done-area .flow-arrow {
@@ -811,7 +812,7 @@
 </head>
 <body>
     <h1>BOTTLENECK SIMULATOR</h1>
-    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v30</span></p>
+    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v31</span></p>
 
     <div class="controls">
         <button id="startBtn">START DAY 1</button>
@@ -1536,7 +1537,7 @@
         document.getElementById('reportClose').addEventListener('click', hideReport);
 
         // Auto-refresh when PWA resumes from background
-        const CURRENT_VERSION = 'v30';
+        const CURRENT_VERSION = 'v31';
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'visible') {
                 // Check if there's a newer version available
