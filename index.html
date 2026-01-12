@@ -425,6 +425,12 @@
         .completed-item {
             font-size: 14px;
         }
+        .finished-count {
+            font-size: 11px;
+            color: #166534;
+            font-weight: 600;
+            margin-top: 4px;
+        }
         .truck-area {
             display: flex;
             flex-direction: column;
@@ -459,6 +465,24 @@
         .truck {
             font-size: 40px;
             transform: scaleX(-1);
+        }
+        .truck-count {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #22c55e;
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .truck-count.visible {
+            opacity: 1;
         }
         .truck-label {
             font-size: 11px;
@@ -861,7 +885,7 @@
 </head>
 <body>
     <h1>BOTTLENECK SIMULATOR</h1>
-    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v36</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
+    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v37</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
 
     <div class="controls">
         <button id="startBtn">START DAY 1</button>
@@ -912,11 +936,13 @@
                 <div class="completed-title">FINISHED</div>
                 <div class="completed-stack" id="completedStack"></div>
                 <div class="compact-count finished" id="finishedCompact">📦 ×0</div>
+                <div class="finished-count" id="finishedCount">0 items</div>
             </div>
             <div class="truck-area">
                 <div class="truck-with-cargo" id="truckWithCargo">
                     <div class="truck-bed" id="truckBed"></div>
                     <div class="truck" id="truck">🚚</div>
+                    <div class="truck-count" id="truckCount"></div>
                 </div>
                 <div class="truck-label">SHIPPING</div>
             </div>
@@ -1350,6 +1376,8 @@
             stack.innerHTML = completedItems.map(() => '<span class="completed-item">📦</span>').join('');
             // Update compact display for mobile
             document.getElementById('finishedCompact').textContent = `📦 ×${completedItems.length}`;
+            // Update finished count text
+            document.getElementById('finishedCount').textContent = completedItems.length + ' items';
         }
 
         // Render raw materials pile
@@ -1371,11 +1399,15 @@
             const truckWithCargo = document.getElementById('truckWithCargo');
             const truckBed = document.getElementById('truckBed');
             const stack = document.getElementById('completedStack');
+            const truckCount = document.getElementById('truckCount');
+
+            // Store count before clearing
+            const itemsToShip = completedItems.length;
 
             // Animate loading boxes one by one onto truck bed
             let loadIndex = 0;
             const loadInterval = setInterval(() => {
-                if (loadIndex < completedItems.length) {
+                if (loadIndex < itemsToShip) {
                     truckBed.innerHTML += '<span class="truck-bed-item">📦</span>';
                     loadIndex++;
                 } else {
@@ -1384,8 +1416,12 @@
                     stack.innerHTML = '';
                     completedItems = [];
                     document.getElementById('finishedCompact').textContent = '📦 ×0';
+                    document.getElementById('finishedCount').textContent = '0 items';
                     // Drive away after loading complete
                     setTimeout(() => {
+                        // Show truck count badge
+                        truckCount.textContent = itemsToShip + ' shipped';
+                        truckCount.classList.add('visible');
                         playTruckSound();
                         truckWithCargo.classList.add('driving');
                     }, 300);
@@ -1397,8 +1433,11 @@
         function resetTruck() {
             const truckWithCargo = document.getElementById('truckWithCargo');
             const truckBed = document.getElementById('truckBed');
+            const truckCount = document.getElementById('truckCount');
             truckWithCargo.classList.remove('driving');
             truckBed.innerHTML = '';
+            truckCount.classList.remove('visible');
+            truckCount.textContent = '';
         }
 
         // Show end of day report
@@ -1584,7 +1623,7 @@
         document.getElementById('reportClose').addEventListener('click', hideReport);
 
         // Auto-refresh when PWA resumes from background
-        const CURRENT_VERSION = 'v36';
+        const CURRENT_VERSION = 'v37';
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'visible') {
                 // Check if there's a newer version available
