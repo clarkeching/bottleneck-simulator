@@ -675,6 +675,16 @@
                 border: 1px dashed #fbbf24;
                 font-weight: 600;
                 color: #92400e;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 2px;
+            }
+            .mobile-raw-label {
+                font-size: 8px;
+                font-weight: 700;
+                color: #b45309;
+                letter-spacing: 0.5px;
             }
 
             /* Compact truck */
@@ -768,7 +778,7 @@
             }
         }
 
-        /* Very short screens (landscape phones/tablets) */
+        /* Landscape phones - use horizontal layout */
         @media (max-height: 500px) and (max-width: 1000px) {
             body {
                 padding: 8px;
@@ -784,17 +794,52 @@
             .controls {
                 margin-bottom: 8px;
             }
+            /* Override mobile vertical layout for landscape */
             .flow-container {
+                flex-direction: row;
+                flex-wrap: nowrap;
                 padding: 8px;
-                gap: 8px;
+                gap: 6px;
+                align-items: flex-start;
+            }
+            .incoming {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .incoming .flow-arrow {
+                display: block;
+            }
+            .workers-row {
+                flex-direction: row;
+                gap: 4px;
+            }
+            .worker-station {
+                flex-direction: column;
+                background: transparent;
+                padding: 4px;
+                width: auto;
+                max-width: none;
+            }
+            .queue-count {
+                display: none;
+            }
+            .queue {
+                display: none;
             }
             .worker-icon {
-                font-size: 20px;
+                font-size: 24px;
                 padding: 4px;
             }
-            .worker-label,
+            .worker-label {
+                font-size: 8px;
+            }
             .worker-rate {
-                display: none;
+                font-size: 7px;
+            }
+            .done-area {
+                flex-direction: column;
+                align-items: center;
             }
             .instructions {
                 display: none;
@@ -816,7 +861,7 @@
 </head>
 <body>
     <h1>BOTTLENECK SIMULATOR</h1>
-    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v32</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
+    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v33</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
 
     <div class="controls">
         <button id="startBtn">START DAY 1</button>
@@ -1199,7 +1244,7 @@
                 queueCount.className = 'queue-count';
                 if (index === 0) {
                     // Worker 1 shows raw materials (styled differently)
-                    queueCount.innerHTML = `<span class="mobile-raw">📦×${rawMaterials}</span>`;
+                    queueCount.innerHTML = `<span class="mobile-raw"><span class="mobile-raw-label">RAW</span>📦×${rawMaterials}</span>`;
                 } else {
                     // Always show something to maintain alignment (use invisible placeholder when 0)
                     queueCount.innerHTML = worker.queue.length > 0 ? `📦×${worker.queue.length}` : '&nbsp;&nbsp;&nbsp;&nbsp;';
@@ -1541,7 +1586,7 @@
         document.getElementById('reportClose').addEventListener('click', hideReport);
 
         // Auto-refresh when PWA resumes from background
-        const CURRENT_VERSION = 'v32';
+        const CURRENT_VERSION = 'v33';
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'visible') {
                 // Check if there's a newer version available
