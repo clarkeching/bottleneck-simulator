@@ -571,21 +571,14 @@
             .flow-container {
                 display: flex;
                 flex-direction: column;
-                gap: 20px;
+                gap: 8px;
                 padding: 16px;
                 align-items: stretch;
             }
 
-            /* Top row: raw materials - left aligned */
+            /* Hide raw materials as separate section - it will be in first worker card */
             .incoming {
-                flex-direction: row;
-                align-items: center;
-                gap: 12px;
-                justify-content: flex-start;
-            }
-            .incoming .flow-arrow {
-                display: block;
-                font-size: 18px;
+                display: none;
             }
 
             /* Middle: workers in horizontal rows using vertical space */
@@ -603,6 +596,7 @@
                 align-items: center;
                 justify-content: flex-start;
                 gap: 16px;
+                margin-top: 8px;
             }
             .done-area .flow-arrow {
                 display: block;
@@ -671,6 +665,16 @@
             .worker-station:has(.worker.bottleneck) {
                 background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
                 border: 1px solid #fca5a5;
+            }
+
+            /* Raw materials in first worker card on mobile */
+            .mobile-raw {
+                background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+                padding: 4px 8px;
+                border-radius: 6px;
+                border: 1px dashed #fbbf24;
+                font-weight: 600;
+                color: #92400e;
             }
 
             /* Compact truck */
@@ -812,7 +816,7 @@
 </head>
 <body>
     <h1>BOTTLENECK SIMULATOR</h1>
-    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v31</span></p>
+    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v32</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
 
     <div class="controls">
         <button id="startBtn">START DAY 1</button>
@@ -1190,12 +1194,12 @@
                 station.className = 'worker-station';
 
                 // Queue count for mobile (shown instead of individual boxes)
-                // Worker #1 (index 0) doesn't show queue - they pull from raw materials
+                // Worker #1 (index 0) shows raw materials count instead
                 const queueCount = document.createElement('div');
                 queueCount.className = 'queue-count';
                 if (index === 0) {
-                    // Worker 1 pulls from raw materials, so always show placeholder for alignment
-                    queueCount.innerHTML = '&nbsp;&nbsp;&nbsp;&nbsp;';
+                    // Worker 1 shows raw materials (styled differently)
+                    queueCount.innerHTML = `<span class="mobile-raw">📦×${rawMaterials}</span>`;
                 } else {
                     // Always show something to maintain alignment (use invisible placeholder when 0)
                     queueCount.innerHTML = worker.queue.length > 0 ? `📦×${worker.queue.length}` : '&nbsp;&nbsp;&nbsp;&nbsp;';
@@ -1537,7 +1541,7 @@
         document.getElementById('reportClose').addEventListener('click', hideReport);
 
         // Auto-refresh when PWA resumes from background
-        const CURRENT_VERSION = 'v31';
+        const CURRENT_VERSION = 'v32';
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'visible') {
                 // Check if there's a newer version available
