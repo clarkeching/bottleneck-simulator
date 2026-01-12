@@ -861,7 +861,7 @@
 </head>
 <body>
     <h1>BOTTLENECK SIMULATOR</h1>
-    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v35</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
+    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v36</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
 
     <div class="controls">
         <button id="startBtn">START DAY 1</button>
@@ -1330,12 +1330,10 @@
                             // Pass the item (with primed flag if it has one) to next worker
                             workers[index + 1].queue.push(item);
                         } else {
-                            // Only count non-primed items as shipped
-                            if (!item.primed) {
-                                completedCount++;
-                                completedItems.push({});
-                                playDingSound();
-                            }
+                            // Item shipped!
+                            completedCount++;
+                            completedItems.push({});
+                            playDingSound();
                             renderCompletedStack();
                         }
                     }
@@ -1586,7 +1584,7 @@
         document.getElementById('reportClose').addEventListener('click', hideReport);
 
         // Auto-refresh when PWA resumes from background
-        const CURRENT_VERSION = 'v35';
+        const CURRENT_VERSION = 'v36';
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'visible') {
                 // Check if there's a newer version available
