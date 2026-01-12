@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 
     <!-- PWA / Add to Home Screen -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -664,6 +666,12 @@
                 font-size: 11px;
             }
 
+            /* Bottleneck card highlight on mobile */
+            .worker-station:has(.worker.bottleneck) {
+                background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+                border: 1px solid #fca5a5;
+            }
+
             /* Compact truck */
             .truck-area {
                 transform: scale(0.8);
@@ -679,7 +687,15 @@
                 font-size: 10px;
             }
             .raw-materials-count {
-                font-size: 9px;
+                display: none;  /* Hide redundant count on mobile */
+            }
+
+            /* Better finished area on mobile */
+            .done-area {
+                margin-top: 8px;
+            }
+            .truck-area {
+                transform: scale(0.9);
             }
 
             .instructions {
@@ -795,7 +811,7 @@
 </head>
 <body>
     <h1>BOTTLENECK SIMULATOR</h1>
-    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v29</span></p>
+    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v30</span></p>
 
     <div class="controls">
         <button id="startBtn">START DAY 1</button>
@@ -1518,6 +1534,26 @@
         document.getElementById('resetBtn').addEventListener('click', fullReset);
         document.getElementById('randomizeBtn').addEventListener('click', randomizeCapacities);
         document.getElementById('reportClose').addEventListener('click', hideReport);
+
+        // Auto-refresh when PWA resumes from background
+        const CURRENT_VERSION = 'v30';
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+                // Check if there's a newer version available
+                fetch(window.location.href + '?_=' + Date.now())
+                    .then(response => response.text())
+                    .then(html => {
+                        const match = html.match(/v(\d+)<\/span>/);
+                        if (match) {
+                            const remoteVersion = 'v' + match[1];
+                            if (remoteVersion !== CURRENT_VERSION) {
+                                window.location.reload();
+                            }
+                        }
+                    })
+                    .catch(() => {});  // Silently fail if offline
+            }
+        });
     </script>
 </body>
 </html>
