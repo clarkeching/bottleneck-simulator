@@ -779,7 +779,7 @@
 </head>
 <body>
     <h1>BOTTLENECK SIMULATOR</h1>
-    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v25</span></p>
+    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v26</span></p>
 
     <div class="controls">
         <button id="startBtn">START DAY 1</button>
@@ -954,6 +954,28 @@
             noiseGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
             noise.start();
             noise.stop(audioCtx.currentTime + 0.05);
+        }
+
+        function playDingSound() {
+            if (window.isMuted) return;
+            if (!window.audioCtx) {
+                window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            var audioCtx = window.audioCtx;
+            var t = audioCtx.currentTime;
+
+            // High pitched ding
+            var osc = audioCtx.createOscillator();
+            var gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1200, t);
+            osc.frequency.exponentialRampToValueAtTime(800, t + 0.15);
+            gain.gain.setValueAtTime(0.08, t);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
+            osc.start(t);
+            osc.stop(t + 0.2);
         }
 
         function playTruckSound() {
@@ -1230,6 +1252,7 @@
                             if (!item.primed) {
                                 completedCount++;
                                 completedItems.push({});
+                                playDingSound();
                             }
                             renderCompletedStack();
                         }
