@@ -861,7 +861,7 @@
 </head>
 <body>
     <h1>BOTTLENECK SIMULATOR</h1>
-    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v34</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
+    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v35</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
 
     <div class="controls">
         <button id="startBtn">START DAY 1</button>
@@ -1217,14 +1217,11 @@
                     completedCount: 0  // Track individual worker output
                 };
 
-                // On first day, all workers start with a pile of items in their queue
-                // This "primes the pipeline" so the bottleneck can work at full capacity immediately
-                // Mark these as "primed" so they don't count toward day 1's shipped total
-                if (isFirstDay) {
-                    // Give each worker 5 primed items - enough to keep them busy
-                    for (let j = 0; j < 5; j++) {
-                        worker.queue.push({ primed: true });
-                    }
+                // On first day, give workers 2-5 one item each to start
+                // These are NOT marked as primed - they count toward output
+                // This represents work-in-progress from before Day 1
+                if (isFirstDay && i > 0) {
+                    worker.queue.push({});  // Regular item, will be counted
                 }
 
                 workers.push(worker);
@@ -1589,7 +1586,7 @@
         document.getElementById('reportClose').addEventListener('click', hideReport);
 
         // Auto-refresh when PWA resumes from background
-        const CURRENT_VERSION = 'v34';
+        const CURRENT_VERSION = 'v35';
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'visible') {
                 // Check if there's a newer version available
