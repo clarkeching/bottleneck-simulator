@@ -885,7 +885,7 @@
 </head>
 <body>
     <h1>BOTTLENECK SIMULATOR</h1>
-    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v38</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
+    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v39</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
 
     <div class="controls">
         <button id="startBtn">START DAY 1</button>
@@ -1365,6 +1365,8 @@
                             // End day when we hit bottleneck capacity
                             const bottleneckCapacity = workerCapacities[bottleneckPosition];
                             if (completedCount >= bottleneckCapacity) {
+                                timeLeft = 0;  // Set clock to end of day
+                                updateStats();
                                 stop(true);
                             }
                         }
@@ -1581,6 +1583,7 @@
             completedCount = 0;
             completedItems = [];
             rawMaterials = CONFIG.STARTING_RAW_MATERIALS;
+            timeLeft = CONFIG.SHIFT_DURATION;  // Reset clock to 8am
             initWorkers(true);  // First day with starting inventory
             renderWorkers();
             renderCompletedStack();
@@ -1629,7 +1632,7 @@
         document.getElementById('reportClose').addEventListener('click', hideReport);
 
         // Auto-refresh when PWA resumes from background
-        const CURRENT_VERSION = 'v38';
+        const CURRENT_VERSION = 'v39';
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'visible') {
                 // Check if there's a newer version available
