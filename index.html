@@ -921,7 +921,7 @@
 </head>
 <body>
     <h1>BOTTLENECK SIMULATOR</h1>
-    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v43</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
+    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v44</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
 
     <div class="controls">
         <button id="startBtn">START DAY 1</button>
@@ -929,32 +929,9 @@
         <button id="resetBtn">RESET</button>
         <div class="timer"><span id="timeDisplay">8:00 AM</span></div>
         <button class="mute-btn muted" id="muteBtn" title="Toggle sound">
-            <span class="mute-icon">🔇</span>
+            <span class="mute-icon" id="muteIcon">🔇</span>
             <span class="mute-label">Sound</span>
         </button>
-        <script>
-            document.getElementById('muteBtn').onclick = function() {
-                var btn = this;
-                var icon = btn.querySelector('.mute-icon');
-                if (btn.classList.contains('muted')) {
-                    icon.textContent = '🔊';
-                    btn.classList.remove('muted');
-                    window.isMuted = false;
-
-                    // Create AudioContext on user gesture (required by browsers)
-                    if (!window.audioCtx) {
-                        window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                    }
-                    if (window.audioCtx.state === 'suspended') {
-                        window.audioCtx.resume();
-                    }
-                } else {
-                    icon.textContent = '🔇';
-                    btn.classList.add('muted');
-                    window.isMuted = true;
-                }
-            };
-        </script>
         </div>
 
     <div class="flow-container">
@@ -1045,8 +1022,10 @@
         const COSTUMES = ['👷‍♀️', '🧑‍💼', '👩‍💻'];
 
         // Audio context for work sounds
-        window.audioCtx = null;
-        window.isMuted = true; // Start muted (use window so inline script can access)
+        window.audioCtx = window.audioCtx || null;
+        if (typeof window.isMuted === 'undefined') {
+            window.isMuted = true; // Start muted (use window so inline script can access)
+        }
 
         function playWorkSound() {
             if (window.isMuted) return;
@@ -1749,9 +1728,30 @@
             this.textContent = '✅ Invoices Sent!';
             this.disabled = true;
         });
+        document.getElementById('muteBtn').addEventListener('click', function() {
+            var btn = this;
+            var icon = document.getElementById('muteIcon');
+            if (btn.classList.contains('muted')) {
+                icon.textContent = '🔊';
+                btn.classList.remove('muted');
+                window.isMuted = false;
+
+                // Create AudioContext on user gesture (required by browsers)
+                if (!window.audioCtx) {
+                    window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (window.audioCtx.state === 'suspended') {
+                    window.audioCtx.resume();
+                }
+            } else {
+                icon.textContent = '🔇';
+                btn.classList.add('muted');
+                window.isMuted = true;
+            }
+        });
 
         // Auto-refresh when PWA resumes from background
-        const CURRENT_VERSION = 'v43';
+        const CURRENT_VERSION = 'v44';
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'visible') {
                 // Check if there's a newer version available
