@@ -921,7 +921,7 @@
 </head>
 <body>
     <h1>BOTTLENECK SIMULATOR</h1>
-    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v46</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
+    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v47</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
 
     <div class="controls">
         <button id="startBtn">START DAY 1</button>
@@ -1216,64 +1216,57 @@
             var audioCtx = window.audioCtx;
             var t = audioCtx.currentTime;
 
-            // Classic cash register "KA-CHING!"
-            // Part 1: The "KA" - mechanical clunk/thump
-            const thump = audioCtx.createOscillator();
-            const thumpGain = audioCtx.createGain();
-            thump.connect(thumpGain);
-            thumpGain.connect(audioCtx.destination);
-            thump.type = 'sine';
-            thump.frequency.setValueAtTime(150, t);
-            thump.frequency.exponentialRampToValueAtTime(50, t + 0.08);
-            thumpGain.gain.setValueAtTime(0.4, t);
-            thumpGain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
-            thump.start(t);
-            thump.stop(t + 0.1);
+            // Classic cash register "CHA-CHING!" - two distinct parts
 
-            // Part 2: The "CHING!" - bright bell hit
-            const bell = audioCtx.createOscillator();
-            const bellGain = audioCtx.createGain();
-            bell.connect(bellGain);
-            bellGain.connect(audioCtx.destination);
-            bell.type = 'sine';
-            bell.frequency.setValueAtTime(2600, t + 0.08);
-            bellGain.gain.setValueAtTime(0.3, t + 0.08);
-            bellGain.gain.exponentialRampToValueAtTime(0.01, t + 0.6);
-            bell.start(t + 0.08);
-            bell.stop(t + 0.6);
+            // Part 1: "CHA" - drawer opening clunk at t=0
+            const clunk = audioCtx.createOscillator();
+            const clunkGain = audioCtx.createGain();
+            clunk.connect(clunkGain);
+            clunkGain.connect(audioCtx.destination);
+            clunk.type = 'square';
+            clunk.frequency.setValueAtTime(80, t);
+            clunk.frequency.exponentialRampToValueAtTime(40, t + 0.1);
+            clunkGain.gain.setValueAtTime(0.3, t);
+            clunkGain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+            clunk.start(t);
+            clunk.stop(t + 0.1);
 
-            // Harmonic overtone for richer bell sound
-            const bell2 = audioCtx.createOscillator();
-            const bell2Gain = audioCtx.createGain();
-            bell2.connect(bell2Gain);
-            bell2Gain.connect(audioCtx.destination);
-            bell2.type = 'sine';
-            bell2.frequency.setValueAtTime(5200, t + 0.08);
-            bell2Gain.gain.setValueAtTime(0.1, t + 0.08);
-            bell2Gain.gain.exponentialRampToValueAtTime(0.01, t + 0.4);
-            bell2.start(t + 0.08);
-            bell2.stop(t + 0.4);
+            // Part 2: "CHING!" - the bell at t=0.15 (after a short pause)
+            // Main bell tone
+            const ching1 = audioCtx.createOscillator();
+            const ching1Gain = audioCtx.createGain();
+            ching1.connect(ching1Gain);
+            ching1Gain.connect(audioCtx.destination);
+            ching1.type = 'sine';
+            ching1.frequency.value = 3520; // A7 - high and bright
+            ching1Gain.gain.setValueAtTime(0.4, t + 0.12);
+            ching1Gain.gain.exponentialRampToValueAtTime(0.01, t + 0.7);
+            ching1.start(t + 0.12);
+            ching1.stop(t + 0.7);
 
-            // Part 3: Drawer slide (metallic noise)
-            const noiseLength = audioCtx.sampleRate * 0.15;
-            const noiseBuffer = audioCtx.createBuffer(1, noiseLength, audioCtx.sampleRate);
-            const noiseData = noiseBuffer.getChannelData(0);
-            for (let i = 0; i < noiseLength; i++) {
-                noiseData[i] = Math.random() * 2 - 1;
-            }
-            const noise = audioCtx.createBufferSource();
-            noise.buffer = noiseBuffer;
-            const noiseFilter = audioCtx.createBiquadFilter();
-            noiseFilter.type = 'highpass';
-            noiseFilter.frequency.value = 2000;
-            const noiseGain = audioCtx.createGain();
-            noise.connect(noiseFilter);
-            noiseFilter.connect(noiseGain);
-            noiseGain.connect(audioCtx.destination);
-            noiseGain.gain.setValueAtTime(0.08, t);
-            noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
-            noise.start(t);
-            noise.stop(t + 0.15);
+            // Second harmonic for shimmer
+            const ching2 = audioCtx.createOscillator();
+            const ching2Gain = audioCtx.createGain();
+            ching2.connect(ching2Gain);
+            ching2Gain.connect(audioCtx.destination);
+            ching2.type = 'sine';
+            ching2.frequency.value = 7040; // A8 - octave up
+            ching2Gain.gain.setValueAtTime(0.15, t + 0.12);
+            ching2Gain.gain.exponentialRampToValueAtTime(0.01, t + 0.5);
+            ching2.start(t + 0.12);
+            ching2.stop(t + 0.5);
+
+            // Third tone for that classic register ring
+            const ching3 = audioCtx.createOscillator();
+            const ching3Gain = audioCtx.createGain();
+            ching3.connect(ching3Gain);
+            ching3Gain.connect(audioCtx.destination);
+            ching3.type = 'sine';
+            ching3.frequency.value = 4400; // Between A7 and A8
+            ching3Gain.gain.setValueAtTime(0.2, t + 0.12);
+            ching3Gain.gain.exponentialRampToValueAtTime(0.01, t + 0.6);
+            ching3.start(t + 0.12);
+            ching3.stop(t + 0.6);
         }
 
         // State
@@ -1736,10 +1729,16 @@
                 btn.classList.remove('muted');
                 window.isMuted = false;
 
-                // Safari requires AudioContext created AND resumed in same user gesture
-                // Create fresh context each time to avoid Safari issues
+                // Safari fix: create context AND play a sound in same user gesture
                 window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                window.audioCtx.resume();
+                // Play a tiny silent sound to unlock audio
+                var osc = window.audioCtx.createOscillator();
+                var gain = window.audioCtx.createGain();
+                gain.gain.value = 0.001; // Nearly silent
+                osc.connect(gain);
+                gain.connect(window.audioCtx.destination);
+                osc.start();
+                osc.stop(window.audioCtx.currentTime + 0.01);
             } else {
                 icon.textContent = '🔇';
                 btn.classList.add('muted');
@@ -1748,7 +1747,7 @@
         });
 
         // Auto-refresh when PWA resumes from background
-        const CURRENT_VERSION = 'v46';
+        const CURRENT_VERSION = 'v47';
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'visible') {
                 // Check if there's a newer version available
