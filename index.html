@@ -921,7 +921,7 @@
 </head>
 <body>
     <h1>BOTTLENECK SIMULATOR</h1>
-    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v47</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
+    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v48</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
 
     <div class="controls">
         <button id="startBtn">START DAY 1</button>
@@ -1216,57 +1216,54 @@
             var audioCtx = window.audioCtx;
             var t = audioCtx.currentTime;
 
-            // Classic cash register "CHA-CHING!" - two distinct parts
+            // Mechanical cash register sound
 
-            // Part 1: "CHA" - drawer opening clunk at t=0
-            const clunk = audioCtx.createOscillator();
-            const clunkGain = audioCtx.createGain();
-            clunk.connect(clunkGain);
-            clunkGain.connect(audioCtx.destination);
-            clunk.type = 'square';
-            clunk.frequency.setValueAtTime(80, t);
-            clunk.frequency.exponentialRampToValueAtTime(40, t + 0.1);
-            clunkGain.gain.setValueAtTime(0.3, t);
-            clunkGain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
-            clunk.start(t);
-            clunk.stop(t + 0.1);
+            // Part 1: Drawer slam/mechanical click
+            var clickLen = audioCtx.sampleRate * 0.08;
+            var clickBuf = audioCtx.createBuffer(1, clickLen, audioCtx.sampleRate);
+            var clickData = clickBuf.getChannelData(0);
+            for (var i = 0; i < clickLen; i++) {
+                clickData[i] = (Math.random() * 2 - 1) * Math.exp(-i / (clickLen * 0.1));
+            }
+            var click = audioCtx.createBufferSource();
+            click.buffer = clickBuf;
+            var clickFilter = audioCtx.createBiquadFilter();
+            clickFilter.type = 'bandpass';
+            clickFilter.frequency.value = 1500;
+            clickFilter.Q.value = 1;
+            var clickGain = audioCtx.createGain();
+            clickGain.gain.value = 0.6;
+            click.connect(clickFilter);
+            clickFilter.connect(clickGain);
+            clickGain.connect(audioCtx.destination);
+            click.start(t);
 
-            // Part 2: "CHING!" - the bell at t=0.15 (after a short pause)
-            // Main bell tone
-            const ching1 = audioCtx.createOscillator();
-            const ching1Gain = audioCtx.createGain();
-            ching1.connect(ching1Gain);
-            ching1Gain.connect(audioCtx.destination);
-            ching1.type = 'sine';
-            ching1.frequency.value = 3520; // A7 - high and bright
-            ching1Gain.gain.setValueAtTime(0.4, t + 0.12);
-            ching1Gain.gain.exponentialRampToValueAtTime(0.01, t + 0.7);
-            ching1.start(t + 0.12);
-            ching1.stop(t + 0.7);
+            // Part 2: Coin jingle/rattle (multiple short metallic pings)
+            for (var j = 0; j < 6; j++) {
+                var ping = audioCtx.createOscillator();
+                var pingGain = audioCtx.createGain();
+                ping.connect(pingGain);
+                pingGain.connect(audioCtx.destination);
+                ping.type = 'sine';
+                ping.frequency.value = 4000 + Math.random() * 3000;
+                var pingTime = t + 0.05 + j * 0.02 + Math.random() * 0.02;
+                pingGain.gain.setValueAtTime(0.15, pingTime);
+                pingGain.gain.exponentialRampToValueAtTime(0.001, pingTime + 0.08);
+                ping.start(pingTime);
+                ping.stop(pingTime + 0.08);
+            }
 
-            // Second harmonic for shimmer
-            const ching2 = audioCtx.createOscillator();
-            const ching2Gain = audioCtx.createGain();
-            ching2.connect(ching2Gain);
-            ching2Gain.connect(audioCtx.destination);
-            ching2.type = 'sine';
-            ching2.frequency.value = 7040; // A8 - octave up
-            ching2Gain.gain.setValueAtTime(0.15, t + 0.12);
-            ching2Gain.gain.exponentialRampToValueAtTime(0.01, t + 0.5);
-            ching2.start(t + 0.12);
-            ching2.stop(t + 0.5);
-
-            // Third tone for that classic register ring
-            const ching3 = audioCtx.createOscillator();
-            const ching3Gain = audioCtx.createGain();
-            ching3.connect(ching3Gain);
-            ching3Gain.connect(audioCtx.destination);
-            ching3.type = 'sine';
-            ching3.frequency.value = 4400; // Between A7 and A8
-            ching3Gain.gain.setValueAtTime(0.2, t + 0.12);
-            ching3Gain.gain.exponentialRampToValueAtTime(0.01, t + 0.6);
-            ching3.start(t + 0.12);
-            ching3.stop(t + 0.6);
+            // Part 3: The "ching" - metallic ring
+            var ring = audioCtx.createOscillator();
+            var ringGain = audioCtx.createGain();
+            ring.connect(ringGain);
+            ringGain.connect(audioCtx.destination);
+            ring.type = 'triangle';
+            ring.frequency.value = 2800;
+            ringGain.gain.setValueAtTime(0.25, t + 0.08);
+            ringGain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+            ring.start(t + 0.08);
+            ring.stop(t + 0.4);
         }
 
         // State
@@ -1747,7 +1744,7 @@
         });
 
         // Auto-refresh when PWA resumes from background
-        const CURRENT_VERSION = 'v47';
+        const CURRENT_VERSION = 'v48';
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'visible') {
                 // Check if there's a newer version available
