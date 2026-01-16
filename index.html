@@ -141,7 +141,10 @@
             box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
         }
         .mute-btn {
-            font-size: 22px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
             padding: 8px 14px;
             cursor: pointer;
             border: 2px solid #e5e7eb;
@@ -155,6 +158,14 @@
         .mute-btn.muted {
             background: #fef2f2;
             border-color: #fca5a5;
+        }
+        .mute-icon {
+            font-size: 22px;
+        }
+        .mute-label {
+            font-size: 9px;
+            color: #6b7280;
+            font-weight: 500;
         }
         #randomizeBtn {
             font-size: 14px;
@@ -910,19 +921,23 @@
 </head>
 <body>
     <h1>BOTTLENECK SIMULATOR</h1>
-    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v42</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
+    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v43</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
 
     <div class="controls">
         <button id="startBtn">START DAY 1</button>
         <button id="stopBtn">STOP</button>
         <button id="resetBtn">RESET</button>
         <div class="timer"><span id="timeDisplay">8:00 AM</span></div>
-        <button class="mute-btn muted" id="muteBtn" title="Toggle sound">🔇</button>
+        <button class="mute-btn muted" id="muteBtn" title="Toggle sound">
+            <span class="mute-icon">🔇</span>
+            <span class="mute-label">Sound</span>
+        </button>
         <script>
             document.getElementById('muteBtn').onclick = function() {
                 var btn = this;
+                var icon = btn.querySelector('.mute-icon');
                 if (btn.classList.contains('muted')) {
-                    btn.textContent = '🔊';
+                    icon.textContent = '🔊';
                     btn.classList.remove('muted');
                     window.isMuted = false;
 
@@ -934,7 +949,7 @@
                         window.audioCtx.resume();
                     }
                 } else {
-                    btn.textContent = '🔇';
+                    icon.textContent = '🔇';
                     btn.classList.add('muted');
                     window.isMuted = true;
                 }
@@ -1736,7 +1751,7 @@
         });
 
         // Auto-refresh when PWA resumes from background
-        const CURRENT_VERSION = 'v42';
+        const CURRENT_VERSION = 'v43';
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'visible') {
                 // Check if there's a newer version available
