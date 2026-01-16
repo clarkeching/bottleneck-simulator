@@ -372,8 +372,33 @@
             line-height: 1.5;
             color: #854d0e;
         }
-        .report-close {
+        .report-invoice {
             margin-top: 24px;
+            padding: 14px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: inherit;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+            transition: all 0.2s ease;
+        }
+        .report-invoice:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+        }
+        .report-invoice:disabled {
+            background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+            box-shadow: none;
+            cursor: default;
+            transform: none;
+        }
+        .report-close {
+            margin-top: 12px;
             padding: 14px 30px;
             font-size: 16px;
             font-weight: 600;
@@ -885,7 +910,7 @@
 </head>
 <body>
     <h1>BOTTLENECK SIMULATOR</h1>
-    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v40</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
+    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v41</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
 
     <div class="controls">
         <button id="startBtn">START DAY 1</button>
@@ -983,6 +1008,7 @@
             <div class="report-insight" id="reportInsight">
                 The bottleneck can only do 20 per day, so output = 20.
             </div>
+            <button class="report-invoice" id="reportInvoice">💰 Send Invoices</button>
             <button class="report-close" id="reportClose">OK</button>
         </div>
     </div>
@@ -1186,6 +1212,75 @@
             hissGain.gain.exponentialRampToValueAtTime(0.01, t + 0.25);
             hiss.start(t);
             hiss.stop(t + 0.3);
+        }
+
+        function playCashRegisterSound() {
+            if (window.isMuted) return;
+            if (!window.audioCtx) {
+                window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            var audioCtx = window.audioCtx;
+            var t = audioCtx.currentTime;
+
+            // Layer 1: The "cha-ching" bell - two quick high tones
+            const bell1 = audioCtx.createOscillator();
+            const bell1Gain = audioCtx.createGain();
+            bell1.connect(bell1Gain);
+            bell1Gain.connect(audioCtx.destination);
+            bell1.type = 'sine';
+            bell1.frequency.setValueAtTime(1800, t);
+            bell1Gain.gain.setValueAtTime(0.15, t);
+            bell1Gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+            bell1.start(t);
+            bell1.stop(t + 0.15);
+
+            const bell2 = audioCtx.createOscillator();
+            const bell2Gain = audioCtx.createGain();
+            bell2.connect(bell2Gain);
+            bell2Gain.connect(audioCtx.destination);
+            bell2.type = 'sine';
+            bell2.frequency.setValueAtTime(2200, t + 0.1);
+            bell2Gain.gain.setValueAtTime(0, t);
+            bell2Gain.gain.setValueAtTime(0.2, t + 0.1);
+            bell2Gain.gain.exponentialRampToValueAtTime(0.01, t + 0.4);
+            bell2.start(t + 0.1);
+            bell2.stop(t + 0.4);
+
+            // Layer 2: Mechanical drawer slide sound (noise burst)
+            const noiseLength = audioCtx.sampleRate * 0.2;
+            const noiseBuffer = audioCtx.createBuffer(1, noiseLength, audioCtx.sampleRate);
+            const noiseData = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < noiseLength; i++) {
+                noiseData[i] = Math.random() * 2 - 1;
+            }
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = noiseBuffer;
+            const noiseFilter = audioCtx.createBiquadFilter();
+            noiseFilter.type = 'bandpass';
+            noiseFilter.frequency.value = 800;
+            noiseFilter.Q.value = 2;
+            const noiseGain = audioCtx.createGain();
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(audioCtx.destination);
+            noiseGain.gain.setValueAtTime(0.1, t);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+            noise.start(t);
+            noise.stop(t + 0.2);
+
+            // Layer 3: Coin jingle (multiple quick high frequencies)
+            for (let i = 0; i < 4; i++) {
+                const coin = audioCtx.createOscillator();
+                const coinGain = audioCtx.createGain();
+                coin.connect(coinGain);
+                coinGain.connect(audioCtx.destination);
+                coin.type = 'sine';
+                coin.frequency.setValueAtTime(3000 + Math.random() * 1000, t + 0.15 + i * 0.03);
+                coinGain.gain.setValueAtTime(0.05, t + 0.15 + i * 0.03);
+                coinGain.gain.exponentialRampToValueAtTime(0.01, t + 0.25 + i * 0.03);
+                coin.start(t + 0.15 + i * 0.03);
+                coin.stop(t + 0.25 + i * 0.03);
+            }
         }
 
         // State
@@ -1461,6 +1556,11 @@
                 so output = <strong>${bottleneckCapacity}</strong>.
             `;
 
+            // Reset invoice button
+            const invoiceBtn = document.getElementById('reportInvoice');
+            invoiceBtn.textContent = '💰 Send Invoices';
+            invoiceBtn.disabled = false;
+
             document.getElementById('reportOverlay').classList.add('visible');
         }
 
@@ -1630,9 +1730,14 @@
         document.getElementById('resetBtn').addEventListener('click', fullReset);
         document.getElementById('randomizeBtn').addEventListener('click', randomizeCapacities);
         document.getElementById('reportClose').addEventListener('click', hideReport);
+        document.getElementById('reportInvoice').addEventListener('click', function() {
+            playCashRegisterSound();
+            this.textContent = '✅ Invoices Sent!';
+            this.disabled = true;
+        });
 
         // Auto-refresh when PWA resumes from background
-        const CURRENT_VERSION = 'v40';
+        const CURRENT_VERSION = 'v41';
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'visible') {
                 // Check if there's a newer version available
