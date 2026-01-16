@@ -248,6 +248,23 @@
             border: 2px dashed #e2e8f0;
             border-radius: 10px;
             margin-right: 6px;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .queue.level-green {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            border-color: #86efac;
+        }
+        .queue.level-yellow {
+            background: linear-gradient(135deg, #fef9c3 0%, #fef08a 100%);
+            border-color: #facc15;
+        }
+        .queue.level-orange {
+            background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
+            border-color: #fb923c;
+        }
+        .queue.level-red {
+            background: linear-gradient(135deg, #fecaca 0%, #f87171 100%);
+            border-color: #dc2626;
         }
         .queue-item {
             font-size: clamp(10px, 1.2vw, 14px);
@@ -592,6 +609,36 @@
             border-radius: 4px;
             margin-bottom: 4px;
         }
+        .queue-bar-container {
+            display: none;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            min-width: 60px;
+        }
+        .queue-bar {
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            width: 100%;
+        }
+        .queue-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.2s ease, background-color 0.3s ease;
+        }
+        .queue-bar-label {
+            font-size: 9px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        .queue-bars-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            width: 100%;
+        }
 
         /* Tablet/mid-size and mobile - two column layout */
         @media (max-width: 1000px) {
@@ -691,11 +738,12 @@
                 display: none;
             }
             .queue-count {
-                display: block;
-                font-size: 13px;
-                min-width: 50px;
-                text-align: left;
+                display: none;
+            }
+            .queue-bar-container {
+                display: flex;
                 order: 1;
+                min-width: 70px;
             }
             .worker {
                 order: 2;
@@ -921,7 +969,7 @@
 </head>
 <body>
     <h1>BOTTLENECK SIMULATOR</h1>
-    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v48</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
+    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v54</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
 
     <div class="controls">
         <button id="startBtn">START DAY 1</button>
@@ -1355,9 +1403,68 @@
                 }
                 station.appendChild(queueCount);
 
+                // Queue bar for mobile (visual WIP indicator)
+                const queueBarContainer = document.createElement('div');
+                queueBarContainer.className = 'queue-bar-container';
+                if (index === 0) {
+                    // Worker 1 shows raw materials
+                    queueBarContainer.innerHTML = `<span class="mobile-raw"><span class="mobile-raw-label">RAW</span>📦×${rawMaterials}</span>`;
+                } else {
+                    const queueLen = worker.queue.length;
+                    const itemsPerBar = 10;
+                    const fullBars = Math.floor(queueLen / itemsPerBar);
+                    const remainder = queueLen % itemsPerBar;
+                    const partialPercent = (remainder / itemsPerBar) * 100;
+
+                    // Color based on total queue depth
+                    let barColor;
+                    if (queueLen === 0) {
+                        barColor = '#d1d5db'; // grey when empty
+                    } else if (queueLen <= 5) {
+                        barColor = '#22c55e'; // green
+                    } else if (queueLen <= 10) {
+                        barColor = '#eab308'; // yellow
+                    } else if (queueLen <= 20) {
+                        barColor = '#f97316'; // orange
+                    } else {
+                        barColor = '#ef4444'; // red
+                    }
+
+                    // Build stacked bars
+                    let barsHTML = '';
+
+                    // Full bars
+                    for (let i = 0; i < fullBars; i++) {
+                        barsHTML += `<div class="queue-bar"><div class="queue-bar-fill" style="width: 100%; background-color: ${barColor};"></div></div>`;
+                    }
+
+                    // Partial bar (or empty placeholder)
+                    if (remainder > 0 || fullBars === 0) {
+                        const displayPercent = queueLen === 0 ? 5 : partialPercent;
+                        barsHTML += `<div class="queue-bar"><div class="queue-bar-fill" style="width: ${displayPercent}%; background-color: ${barColor};"></div></div>`;
+                    }
+
+                    queueBarContainer.innerHTML = `
+                        <div class="queue-bars-stack">${barsHTML}</div>
+                        <span class="queue-bar-label">${queueLen > 0 ? queueLen + ' waiting' : ''}</span>
+                    `;
+                }
+                station.appendChild(queueBarContainer);
+
                 // Queue to the LEFT of worker (grows downward) - hidden on mobile
                 const queueDiv = document.createElement('div');
-                queueDiv.className = 'queue';
+                const qLen = worker.queue.length;
+                let queueLevel = '';
+                if (qLen >= 1 && qLen <= 5) {
+                    queueLevel = ' level-green';
+                } else if (qLen >= 6 && qLen <= 10) {
+                    queueLevel = ' level-yellow';
+                } else if (qLen >= 11 && qLen <= 20) {
+                    queueLevel = ' level-orange';
+                } else if (qLen > 20) {
+                    queueLevel = ' level-red';
+                }
+                queueDiv.className = 'queue' + queueLevel;
                 queueDiv.innerHTML = worker.queue.map(() => '<span class="queue-item">📦</span>').join('');
                 station.appendChild(queueDiv);
 
@@ -1744,7 +1851,7 @@
         });
 
         // Auto-refresh when PWA resumes from background
-        const CURRENT_VERSION = 'v48';
+        const CURRENT_VERSION = 'v54';
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'visible') {
                 // Check if there's a newer version available
