@@ -921,7 +921,7 @@
 </head>
 <body>
     <h1>BOTTLENECK SIMULATOR</h1>
-    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v45</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
+    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v46</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
 
     <div class="controls">
         <button id="startBtn">START DAY 1</button>
@@ -1028,7 +1028,6 @@
         }
 
         function playWorkSound() {
-            console.log('playWorkSound called, isMuted:', window.isMuted);
             if (window.isMuted) return;
             if (!window.audioCtx) {
                 window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1732,33 +1731,24 @@
         document.getElementById('muteBtn').addEventListener('click', function() {
             var btn = this;
             var icon = document.getElementById('muteIcon');
-            console.log('Mute button clicked, currently muted:', btn.classList.contains('muted'));
             if (btn.classList.contains('muted')) {
                 icon.textContent = '🔊';
                 btn.classList.remove('muted');
                 window.isMuted = false;
-                console.log('Sound ON, isMuted:', window.isMuted);
 
-                // Create AudioContext on user gesture (required by browsers)
-                if (!window.audioCtx) {
-                    window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                    console.log('Created new AudioContext');
-                }
-                if (window.audioCtx.state === 'suspended') {
-                    window.audioCtx.resume();
-                    console.log('Resumed AudioContext');
-                }
-                console.log('AudioContext state:', window.audioCtx.state);
+                // Safari requires AudioContext created AND resumed in same user gesture
+                // Create fresh context each time to avoid Safari issues
+                window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                window.audioCtx.resume();
             } else {
                 icon.textContent = '🔇';
                 btn.classList.add('muted');
                 window.isMuted = true;
-                console.log('Sound OFF, isMuted:', window.isMuted);
             }
         });
 
         // Auto-refresh when PWA resumes from background
-        const CURRENT_VERSION = 'v45';
+        const CURRENT_VERSION = 'v46';
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'visible') {
                 // Check if there's a newer version available
