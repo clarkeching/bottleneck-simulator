@@ -910,7 +910,7 @@
 </head>
 <body>
     <h1>BOTTLENECK SIMULATOR</h1>
-    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v41</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
+    <p class="byline" style="margin: -16px 0 20px 0; font-size: 14px; color: #6b7280;">by <a href="https://clarkeching.com" style="color: #3b82f6; text-decoration: none;">Clarke Ching</a> <span style="color: #d1d5db; font-size: 10px;">v42</span> <button onclick="window.location.reload()" style="background: none; border: none; color: #d1d5db; font-size: 12px; cursor: pointer; padding: 2px 6px;">↻</button></p>
 
     <div class="controls">
         <button id="startBtn">START DAY 1</button>
@@ -1222,32 +1222,46 @@
             var audioCtx = window.audioCtx;
             var t = audioCtx.currentTime;
 
-            // Layer 1: The "cha-ching" bell - two quick high tones
-            const bell1 = audioCtx.createOscillator();
-            const bell1Gain = audioCtx.createGain();
-            bell1.connect(bell1Gain);
-            bell1Gain.connect(audioCtx.destination);
-            bell1.type = 'sine';
-            bell1.frequency.setValueAtTime(1800, t);
-            bell1Gain.gain.setValueAtTime(0.15, t);
-            bell1Gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
-            bell1.start(t);
-            bell1.stop(t + 0.15);
+            // Classic cash register "KA-CHING!"
+            // Part 1: The "KA" - mechanical clunk/thump
+            const thump = audioCtx.createOscillator();
+            const thumpGain = audioCtx.createGain();
+            thump.connect(thumpGain);
+            thumpGain.connect(audioCtx.destination);
+            thump.type = 'sine';
+            thump.frequency.setValueAtTime(150, t);
+            thump.frequency.exponentialRampToValueAtTime(50, t + 0.08);
+            thumpGain.gain.setValueAtTime(0.4, t);
+            thumpGain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+            thump.start(t);
+            thump.stop(t + 0.1);
 
+            // Part 2: The "CHING!" - bright bell hit
+            const bell = audioCtx.createOscillator();
+            const bellGain = audioCtx.createGain();
+            bell.connect(bellGain);
+            bellGain.connect(audioCtx.destination);
+            bell.type = 'sine';
+            bell.frequency.setValueAtTime(2600, t + 0.08);
+            bellGain.gain.setValueAtTime(0.3, t + 0.08);
+            bellGain.gain.exponentialRampToValueAtTime(0.01, t + 0.6);
+            bell.start(t + 0.08);
+            bell.stop(t + 0.6);
+
+            // Harmonic overtone for richer bell sound
             const bell2 = audioCtx.createOscillator();
             const bell2Gain = audioCtx.createGain();
             bell2.connect(bell2Gain);
             bell2Gain.connect(audioCtx.destination);
             bell2.type = 'sine';
-            bell2.frequency.setValueAtTime(2200, t + 0.1);
-            bell2Gain.gain.setValueAtTime(0, t);
-            bell2Gain.gain.setValueAtTime(0.2, t + 0.1);
+            bell2.frequency.setValueAtTime(5200, t + 0.08);
+            bell2Gain.gain.setValueAtTime(0.1, t + 0.08);
             bell2Gain.gain.exponentialRampToValueAtTime(0.01, t + 0.4);
-            bell2.start(t + 0.1);
+            bell2.start(t + 0.08);
             bell2.stop(t + 0.4);
 
-            // Layer 2: Mechanical drawer slide sound (noise burst)
-            const noiseLength = audioCtx.sampleRate * 0.2;
+            // Part 3: Drawer slide (metallic noise)
+            const noiseLength = audioCtx.sampleRate * 0.15;
             const noiseBuffer = audioCtx.createBuffer(1, noiseLength, audioCtx.sampleRate);
             const noiseData = noiseBuffer.getChannelData(0);
             for (let i = 0; i < noiseLength; i++) {
@@ -1256,31 +1270,16 @@
             const noise = audioCtx.createBufferSource();
             noise.buffer = noiseBuffer;
             const noiseFilter = audioCtx.createBiquadFilter();
-            noiseFilter.type = 'bandpass';
-            noiseFilter.frequency.value = 800;
-            noiseFilter.Q.value = 2;
+            noiseFilter.type = 'highpass';
+            noiseFilter.frequency.value = 2000;
             const noiseGain = audioCtx.createGain();
             noise.connect(noiseFilter);
             noiseFilter.connect(noiseGain);
             noiseGain.connect(audioCtx.destination);
-            noiseGain.gain.setValueAtTime(0.1, t);
-            noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+            noiseGain.gain.setValueAtTime(0.08, t);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
             noise.start(t);
-            noise.stop(t + 0.2);
-
-            // Layer 3: Coin jingle (multiple quick high frequencies)
-            for (let i = 0; i < 4; i++) {
-                const coin = audioCtx.createOscillator();
-                const coinGain = audioCtx.createGain();
-                coin.connect(coinGain);
-                coinGain.connect(audioCtx.destination);
-                coin.type = 'sine';
-                coin.frequency.setValueAtTime(3000 + Math.random() * 1000, t + 0.15 + i * 0.03);
-                coinGain.gain.setValueAtTime(0.05, t + 0.15 + i * 0.03);
-                coinGain.gain.exponentialRampToValueAtTime(0.01, t + 0.25 + i * 0.03);
-                coin.start(t + 0.15 + i * 0.03);
-                coin.stop(t + 0.25 + i * 0.03);
-            }
+            noise.stop(t + 0.15);
         }
 
         // State
@@ -1737,7 +1736,7 @@
         });
 
         // Auto-refresh when PWA resumes from background
-        const CURRENT_VERSION = 'v41';
+        const CURRENT_VERSION = 'v42';
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'visible') {
                 // Check if there's a newer version available
